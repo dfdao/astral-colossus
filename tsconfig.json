@@ -1,0 +1,16 @@
+{
+    "include": ["./tasks/**/*.ts", "./test/**/*.ts", "./types/**/*.ts", "./scripts/**/*.ts", "./plugins/**/*.ts"],
+    "files": ["./hardhat.config.ts"],
+    "compilerOptions": {
+        "target": "es2018",
+        "module": "commonjs",
+        "strict": true,
+        "esModuleInterop": true,
+        // "outDir": "dist",
+        "resolveJsonModule": true
+    }
+        // "jsx": "react",
+        // "jsxFactory": "h",
+        // "jsxFragmentFactory": "Fragment",
+        // "types": ["preact"]
+  }
