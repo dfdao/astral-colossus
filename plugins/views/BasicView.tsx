@@ -2,8 +2,8 @@ import { h, JSX } from "preact";
 import { useEffect, useState, useLayoutEffect, useReducer, useCallback } from "preact/hooks";
 import type { LocationId } from "@darkforest_eth/types";
 
-import { useCoreContract, usePlanetName, useSelectedPlanet, move } from "../lib/darkforest";
-import { useFlashbotsBundle, useWallet } from "../lib/flashbots";
+import { useCoreContract, usePlanetName, useSelectedPlanet, move } from "../../lib/darkforest";
+import { useFlashbotsBundle, useWallet } from "../../lib/flashbots";
 
 import { FlashbotsStatus } from "../components/FlashbotsStatus";
 import { PlanetLabel } from "../components/PlanetLabel";
