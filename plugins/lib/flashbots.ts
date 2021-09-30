@@ -15,7 +15,7 @@ export function usePrivateKey(): string {
 }
 
 export function useProvider(): providers.JsonRpcProvider {
-  return new providers.JsonRpcProvider({ url: "localhost:8545" }, NETWORK_ID);
+  return new providers.JsonRpcProvider({ url: "localhost:8545" }, 31337);
 }
 
 export function useWallet(): Wallet {

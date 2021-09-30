@@ -13,6 +13,7 @@ export default class initDaoPlugin {
     console.log('rendered');
     this.container = container;
     container.style.width = "500px";
+    //render(null, container);
     render(<InitDaoView />, container);
   }
 

@@ -3,6 +3,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { Signer, Wallet, BigNumber } from "ethers";
 import { ethers } from "hardhat";
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { 
   Gift__factory, 
   Gift, 
@@ -48,6 +49,7 @@ describe("Test Gift ", function () {
     });
 
     it("proves contribution increased by 1", async function () {
+      console.log('hre', hre.contracts);
       const daoBalance = await dao.getBalance();
       console.log('dao $Eth: ', ethers.utils.formatEther(daoBalance));
       // get player's current contribution, should be zero
