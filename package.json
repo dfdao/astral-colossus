@@ -2,7 +2,11 @@
   "name": "dev",
   "version": "1.0.0",
   "description": "",
+  "homepage": "https://darkforest.charity",
   "main": "index.js",
+  "bugs": {
+    "url": "https://github.com/dfdao/charity/issues"
+  },
   "scripts": {
     "test": "hardhat compile && hardhat test",
     "serve": "df-plugin-dev-server --glob plugins/*.tsx --preact"
