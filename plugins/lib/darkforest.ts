@@ -49,6 +49,8 @@ export function useCoreContract(): DarkForestCore | undefined {
   return contract;
 }
 
+
+
 export function useSelectedPlanet(): LocationId | undefined {
   const [selected, setSelected] = useState<LocationId | undefined>(undefined);
   useEffect(() => {
