@@ -20,7 +20,7 @@ export function ColossusView(): JSX.Element {
   const tempAddy = '0x9b25D251D785902e52ee79a328282217C02Bdc76'
   const deployedAddy = '0xc71F6a0d1cB0949804d3cd8700CF9F4CAD2490EB'
 
-  const daoPlayer = new ethers.Contract(tempAddy, DAO_ABI, wallet) as DaoContractPlayer;
+  const daoPlayer = new ethers.Contract(deployedAddy, DAO_ABI, wallet) as DaoContractPlayer;
   
   // console.log(`connected to dao Player @ ${daoPlayer.address}`);
 
