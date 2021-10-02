@@ -5,7 +5,7 @@ import * as ethers from 'ethers';
 import { useWallet } from "../lib/flashbots";
 import { getPlanetName, useSelectedPlanet, useCoreContract } from "../lib/darkforest";
 import DAO_ABI from "../abis/DaoAbi.json";
-import { DaoContractPlayer } from '../../typechain'
+import { DaoContractPlayer } from '../types';
 
 export function ColossusView(): JSX.Element {
   //const print ()
@@ -142,7 +142,6 @@ export function ColossusView(): JSX.Element {
       await refreshTx.wait();
     }
   }
-
 
   const updatePlanetOwners = async (planets: Planet[]) => {
     // dao recognizes player as owner
@@ -301,7 +300,6 @@ export function ColossusView(): JSX.Element {
 
   }
   
- 
   let content;
     content = (
       <div>

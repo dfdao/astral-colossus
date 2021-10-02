@@ -4,7 +4,7 @@ import { parseEther, formatEther } from "@ethersproject/units";
 import { POLL_INTERVAL } from "../helpers/constants";
 import { useContract, useTransactions } from ".";
 
-export function useCharity() {
+export function useColossus() {
   const { charity, charityAddress } = useContract();
   const transactions = useTransactions();
   const [planets, setPlanets] = useState([]);

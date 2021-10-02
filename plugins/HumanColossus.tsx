@@ -2,7 +2,7 @@ import { h, render } from "preact";
 import { AppView } from "./views/AppView";
 import { getContract } from "./helpers/df";
 
-class CharityPlugin {
+class HumanColossusPlugin {
   container: HTMLDivElement | null;
 
   constructor() {
@@ -20,7 +20,7 @@ class CharityPlugin {
       const contract = await getContract();
       render(<AppView contract={contract} />, container);
     } catch (err) {
-      console.error("[CharityPlugin] Error starting plugin:", err);
+      console.error("[HumanColossusPlugin] Error starting plugin:", err);
       render(<div>{err.message}</div>, this.container);
     }
   }
@@ -30,4 +30,4 @@ class CharityPlugin {
   }
 }
 
-export default CharityPlugin;
+export default HumanColossusPlugin;

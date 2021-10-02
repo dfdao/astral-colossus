@@ -22,7 +22,8 @@ export function InitDaoView(): JSX.Element {
 
   const myAddress = '0xe732654bA181fC97A42dC35Cd137CdeE2B17930F';
 
-  const provider = new ethers.providers.JsonRpcProvider(XDAI_URL);
+  // @ts-expect-error
+  const provider = new ethers.providers.JsonRpcProvider(df.ethConnectionProvider);
   console.log('provider', provider);
 
   // @ts-expect-error

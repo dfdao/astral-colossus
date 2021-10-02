@@ -2,35 +2,9 @@
 pragma solidity ^0.7.6;
 pragma experimental ABIEncoderV2;
 
-
 interface IDarkForestCore {
     enum PlanetType {PLANET, SILVER_MINE, RUINS, TRADING_POST, SILVER_BANK}
-    enum ArtifactRarity {Unknown, Common, Rare, Epic, Legendary, Mythic}
-    enum Biome {
-        Unknown,
-        Ocean,
-        Forest,
-        Grassland,
-        Tundra,
-        Swamp,
-        Desert,
-        Ice,
-        Wasteland,
-        Lava,
-        Corrupted
-    }
-    enum ArtifactType {
-        Unknown,
-        Monolith,
-        Colossus,
-        Spaceship,
-        Pyramid,
-        Wormhole,
-        PlanetaryShield,
-        PhotoidCannon,
-        BloomFilter,
-        BlackDomain
-    }
+
     struct Planet {
         address owner;
         uint256 range;
@@ -46,21 +20,7 @@ interface IDarkForestCore {
         PlanetType planetType;
         bool isHomePlanet;
     }
-    struct Artifact {
-        bool isInitialized;
-        uint256 id;
-        uint256 planetDiscoveredOn;
-        ArtifactRarity rarity;
-        Biome planetBiome;
-        uint256 mintedAtTimestamp;
-        address discoverer;
-        ArtifactType artifactType;
-        // an artifact is 'activated' iff lastActivated > lastDeactivated
-        uint256 lastActivated;
-        uint256 lastDeactivated;
-        uint256 wormholeTo; // location id
-    }
-    
+
     function planets(uint256 key) external view returns (Planet memory);
     
     function refreshPlanet(uint256 location) external;
@@ -87,11 +47,52 @@ interface IDarkForestCore {
 }
 
 interface IDarkForestTokens {
-  function getArtifact(uint256 tokenId) external view returns (IDarkForestCore.Artifact memory);
+  enum ArtifactRarity {Unknown, Common, Rare, Epic, Legendary, Mythic}
+  enum Biome {
+      Unknown,
+      Ocean,
+      Forest,
+      Grassland,
+      Tundra,
+      Swamp,
+      Desert,
+      Ice,
+      Wasteland,
+      Lava,
+      Corrupted
+  }
+  enum ArtifactType {
+      Unknown,
+      Monolith,
+      Colossus,
+      Spaceship,
+      Pyramid,
+      Wormhole,
+      PlanetaryShield,
+      PhotoidCannon,
+      BloomFilter,
+      BlackDomain
+  }
+  struct Artifact {
+      bool isInitialized;
+      uint256 id;
+      uint256 planetDiscoveredOn;
+      ArtifactRarity rarity;
+      Biome planetBiome;
+      uint256 mintedAtTimestamp;
+      address discoverer;
+      ArtifactType artifactType;
+      uint256 lastActivated;
+      uint256 lastDeactivated;
+      uint256 wormholeTo;
+  }
+  function getArtifact(uint256 tokenId) external view returns (Artifact memory);
 }
 
 
 contract DaoContractPlayer {
+    event Contribution(address indexed player, uint256 indexed points);
+
     struct FoundryData {
         uint256[2] a;
         uint256[2][2] b;
@@ -99,6 +100,11 @@ contract DaoContractPlayer {
         uint256[7] input;
     }
     
+    // Number of players => player address
+    uint256 public playerCounter;
+
+    mapping(uint256 => address) public players;
+
     bytes32 constant artifactOwnerRevertReason = keccak256(bytes("you can only find artifacts on planets you own"));
     
     address public owner;
@@ -106,6 +112,7 @@ contract DaoContractPlayer {
     IDarkForestTokens immutable public tokensContract;
     
     mapping(uint256 => address) public planetOwners;
+
     mapping(address => uint256) public contributions;
 
     uint256[] public ARTIFACT_POINT_VALUES = [0, 2000, 10000, 200000, 3000000, 20000000];
@@ -115,8 +122,8 @@ contract DaoContractPlayer {
         _;
     }
     
-    constructor(IDarkForestCore _coreContract, IDarkForestTokens _tokensContract) {
-        owner = msg.sender;
+    constructor(address _owner, IDarkForestCore _coreContract, IDarkForestTokens _tokensContract) {
+        owner = _owner;
         coreContract = _coreContract;
         tokensContract = _tokensContract;
     }
@@ -140,6 +147,12 @@ contract DaoContractPlayer {
     }
     
     function updatePlanetOwners(uint256[] calldata _planetIds) external {
+        // add new players to the mapping
+        if(contributions[msg.sender] == 0) {
+          players[playerCounter] = msg.sender;
+          playerCounter++;
+        }
+
         for (uint256 i = 0; i < _planetIds.length; i++) {
             uint256 planetId = _planetIds[i];
             planetOwners[planetId] = getRefreshedPlanet(planetId).owner;
@@ -148,7 +161,7 @@ contract DaoContractPlayer {
     
     function returnPlanet(uint256 _planetId) internal {
         address planetOwner = planetOwners[_planetId];
-        // need to understand why this check is needed
+        /* backup if register ownership didn't happen */
         if (planetOwner == address(0)) planetOwner = msg.sender;
         coreContract.transferOwnership(_planetId, planetOwner);
     }
@@ -161,9 +174,10 @@ contract DaoContractPlayer {
             uint256 planetId = _spacetimeRipIds[i];
             IDarkForestCore.Planet memory planet = getRefreshedPlanet(planetId);
             if (planet.owner != address(this)) continue;
-            if (planet.silver > 0) {
+            if (planet.silver > 100) {
                 coreContract.withdrawSilver(planetId, planet.silver);
                 contributions[msg.sender] += planet.silver;
+                emit Contribution(msg.sender, planet.silver);
             }
             returnPlanet(planetId);
         }
@@ -175,10 +189,12 @@ contract DaoContractPlayer {
               uint256 planetId = foundryData.input[0];
               uint256[] memory artifacts = coreContract.planetArtifacts(planetId);
               uint256 foundArtifactId = artifacts[artifacts.length - 1];
-              IDarkForestCore.Artifact memory foundArtifact = tokensContract.getArtifact(foundArtifactId);
+              IDarkForestTokens.Artifact memory foundArtifact = tokensContract.getArtifact(foundArtifactId);
               contributions[msg.sender] += ARTIFACT_POINT_VALUES[uint256(foundArtifact.rarity)];
+              emit Contribution(msg.sender, ARTIFACT_POINT_VALUES[uint256(foundArtifact.rarity)]);
             }
             catch (bytes memory reason) {
+                /* return the planet in all cases except if when player doesn't own artifact */
                 if (keccak256(reason) == artifactOwnerRevertReason) continue;
             }
             returnPlanet(foundryData.input[0]);

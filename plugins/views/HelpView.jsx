@@ -9,7 +9,6 @@ import {
   BUGS_URL,
   VERSION,
   CONTRACT_URL,
-  CHARITY_ADDRESS,
 } from "../helpers/constants";
 
 const styles = {
@@ -31,7 +30,7 @@ export function HelpView() {
       <Detail title="website" description={<Link url={WEBSITE_URL} />} />
       <Detail
         title="contract"
-        description={<Link url={CONTRACT_URL} text={CHARITY_ADDRESS} />}
+        description={<Link url={CONTRACT_URL} text={"Contract"} />}
       />
       <Detail title="github" description={<Link url={GITHUB_URL} />} />
       <Detail title="issues" description={<Link url={BUGS_URL} />} />
