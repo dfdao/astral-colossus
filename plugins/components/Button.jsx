@@ -3,20 +3,24 @@ import { colors } from "../helpers/theme";
 import { useState } from "preact/hooks";
 
 export function Button({
-  children,
-  style,
+  children = "",
+  style = {},
   theme = "default",
-  onClick,
-  disabled,
+  onClick = () => {},
+  disabled = false,
 }) {
   const [isActive, setIsActive] = useState(false);
+  const onClickAndDeactivate = () => {
+    setIsActive(false);
+    onClick();
+  };
 
   return (
     <button
       style={{ ...styleButton(theme, isActive, disabled), ...style }}
       onMouseEnter={() => setIsActive(true)}
       onMouseLeave={() => setIsActive(false)}
-      onClick={onClick}
+      onClick={onClickAndDeactivate}
       disabled={disabled}
     >
       {children}
