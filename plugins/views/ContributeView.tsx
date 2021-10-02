@@ -2,6 +2,7 @@ import { h } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { Planet, PlanetType } from "@darkforest_eth/types";
 
+import { isProspectable } from "../helpers/df";
 import { getPlanetName, useSelectedPlanet } from "../lib/darkforest";
 import { Button } from "../components/Button";
 import { Loading } from "../components/Loading";
@@ -25,9 +26,10 @@ export function ContributeView() {
   const planetName = getPlanetName(selectedPlanet);
   const isFoundry = planet?.planetType === PlanetType.RUINS;
   const isRip = planet?.planetType === PlanetType.TRADING_POST;
-  const isOwnedByPlayer = true; // TODO
+  // @ts-expect-error
+  const isOwnedByPlayer = planet?.owner === df.account;
   const isValidPlanet = (isOwnedByPlayer && isFoundry) || isRip;
-  const isValidFoundry = isFoundry && planet.energy > planet.energyCap * 0.95; // TODO: confirm cap level and check if already propsected
+  const isValidFoundry = planet && isProspectable(planet);
   const isValidRip = isRip && planet.silver > 100;
 
   // reset state defaults on planet change

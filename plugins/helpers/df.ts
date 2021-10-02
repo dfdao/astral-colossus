@@ -91,7 +91,7 @@ export const isFindable = (planetDetails: any, currentBlockNumber: number) => {
   }
   
 export const isProspectable = (planet: Planet) => {
-    return isFoundry(planet) && enoughEnergyToProspect(planet) && planet.prospectedBlockNumber === undefined && !planet.unconfirmedProspectPlanet;
+  return isFoundry(planet) && enoughEnergyToProspect(planet) && planet.prospectedBlockNumber === undefined && !planet.unconfirmedProspectPlanet;
 }
 
 export const getProspectablePlanets = async (planets: Planet[]) => {
