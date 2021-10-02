@@ -7,7 +7,7 @@ import { getPlanetName, useSelectedPlanet, useCoreContract } from "../lib/darkfo
 import DAO_ABI from "../abis/DaoAbi.json";
 import { DaoContractPlayer } from '../../typechain'
 
-export function InitDaoView(): JSX.Element {
+export function ColossusView(): JSX.Element {
   //const print ()
   // @ts-expect-erro
   // console.log('rendered here df ui', df, ui);

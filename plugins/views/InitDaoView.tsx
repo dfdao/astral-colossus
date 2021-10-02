@@ -21,7 +21,6 @@ export function InitDaoView(): JSX.Element {
 
 
   const myAddress = '0xe732654bA181fC97A42dC35Cd137CdeE2B17930F';
-  const XDAI_URL = 'http://165.227.93.253:8545';
 
   const provider = new ethers.providers.JsonRpcProvider(XDAI_URL);
   console.log('provider', provider);
@@ -149,7 +148,7 @@ export function InitDaoView(): JSX.Element {
     // console.log(`${daoPlayer.address} is whitelistd? ${isWhitelisted}`);
     // console.log(`I, ${wallet.address} am whitelistd? ${iIWhitelisted}`);
     console.log('owner?', await daoPlayer.owner());
-    
+
     const p = await coreContract.players(daoPlayer.address);
     console.log(`dao`, p);
     console.log('is initialized?', p.isInitialized);
