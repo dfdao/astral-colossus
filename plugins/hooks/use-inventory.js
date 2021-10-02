@@ -2,15 +2,15 @@ import { useState, useEffect } from "preact/hooks";
 import { POLL_INTERVAL } from "../helpers/constants";
 
 export function useInventory() {
-  const [artifacts, setArtifacts] = useState([]);
+  const [planets, setPlanet] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
 
   useEffect(() => {
     const fetchInventory = () =>
       df.contractsAPI
-        .getPlayerArtifacts(df.account)
-        .then(setArtifacts)
+        .getPlayerPlanet(df.account)
+        .then(setPlanet)
         .then(() => setLoading(false))
         .catch(setError);
 
@@ -20,7 +20,7 @@ export function useInventory() {
   }, []);
 
   return {
-    data: { artifacts },
+    data: { planets },
     loading,
     error,
   };
