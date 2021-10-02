@@ -8,21 +8,23 @@ import DAO_ABI from "../abis/DaoAbi.json";
 import { DaoContractPlayer } from '../types';
 
 export function ColossusView(): JSX.Element {
-  //const print ()
-  // @ts-expect-erro
-  // console.log('rendered here df ui', df, ui);
+  const url = '';
+  const provider = new ethers.providers.JsonRpcProvider(url);
+  console.log('provider', provider);
+
+  // @ts-expect-error
+  const wallet = new ethers.Wallet(df.getPrivateKey(), provider);
+  console.log('wallet', wallet);
+
   const coreContract = useCoreContract();
 
   const selectedPlanet = useSelectedPlanet();
-  const wallet = useWallet();
 
-  
-  const tempAddy = '0x9b25D251D785902e52ee79a328282217C02Bdc76'
   const deployedAddy = '0xc71F6a0d1cB0949804d3cd8700CF9F4CAD2490EB'
 
   const daoPlayer = new ethers.Contract(deployedAddy, DAO_ABI, wallet) as DaoContractPlayer;
-  
-  // console.log(`connected to dao Player @ ${daoPlayer.address}`);
+
+  console.log('daoPlayer', daoPlayer);
 
   const print = (msg: string) => {
     // @ts-expect-error
@@ -80,7 +82,6 @@ export function ColossusView(): JSX.Element {
     return prospectablePlanets;
   }
 
-
   const makeFindArtifactArgs = async (planets: Planet[]) => {
     let findArgsList = [];
     for(let p of planets) {
@@ -95,6 +96,18 @@ export function ColossusView(): JSX.Element {
 
     return findArgsList;
 
+  }
+
+  const checkDaoOwnership = async () => {
+    // dao recognizes player as owner
+    const pName = getPlanetName(selectedPlanet);
+    const pBigNumber = ethers.BigNumber.from(`0x${selectedPlanet}`);
+    // const updateTx = await daoPlayer.updatePlanetOwners([pBigNumber]);
+    // await updateTx.wait();
+    // const result = daoPlayer.interface.decodeFunctionData("updatePlanetOwners", updateTx.data);
+    const owner = await daoPlayer.planetOwners(pBigNumber);
+    print(`dao says ${pName} is owned by ${owner}`);
+    // console.log("tx result", result);
   }
 
   const getContributions = async () => {
@@ -130,7 +143,6 @@ export function ColossusView(): JSX.Element {
     // @ts-expect-error
     await df.bulkHardRefreshPlanets(locationIds);
   }
-  
   // slow af but works. waits for each refresh to be mined.
   const bulkPlanetRefresh = async (planets: Planet[]) => {
     for (let p of planets) {
@@ -146,33 +158,47 @@ export function ColossusView(): JSX.Element {
   const updatePlanetOwners = async (planets: Planet[]) => {
     // dao recognizes player as owner
     const locationIds = planets.map((p) => ethers.BigNumber.from(`0x${p.locationId}`));
-    const updateTx = await daoPlayer.updatePlanetOwners(locationIds);
-    await updateTx.wait();
+    try {
+      const updateTx = await daoPlayer.updatePlanetOwners(locationIds);
+      const updateTxResponse = await updateTx.wait();
+    } catch (error) {
+      console.log(`error updating owners`, error);
+    }
+
     print(`registered ${locationIds.length} planets with dao`);
   }
-
+  
   /* similar to gift empire */
   const transferPlanets = async (planets: Planet[]) => {
-    print(`transferring ${planets.length} planets to the dao`)
+    print(`transferring ${planets.length} planets to the dao...`)
+    const numPlanets = planets.length;
+    let numTransferred = 0;
     for (let p of planets) {
-      const id = ethers.BigNumber.from(`0x${p.locationId}`)
-      // transfer ownership
-      await coreContract.transferOwnership(id, daoPlayer.address);
       const pName = getPlanetName(p.locationId);
-
-      await coreContract.refreshPlanet(id);
-      const planet = await coreContract.planets(id);
-      console.log(`transferred planet details`, planet);
-      print(`${pName}'s new owner ${planet.owner} is dao? ${tempAddy == planet.owner}`);
+      try {
+        const id = ethers.BigNumber.from(`0x${p.locationId}`)
+        // transfer ownership
+        const transferTx = await coreContract.transferOwnership(id, daoPlayer.address);
+        const transferTxResponse = await transferTx.wait();
+        print(`transferred ${pName}...`)
+        numTransferred +=1;
+        const planet = await coreContract.planets(id);
+        console.log(`transferred planet details`, planet);
+        print(`${pName}'s new owner ${planet.owner} is dao? ${deployedAddy == planet.owner}`);
+        await bulkUiRefresh([p]);
+      } catch (error) {
+        console.log(`error transferring to dao`, error);
+      }
     }
-    
+
     await bulkUiRefresh(planets);
-    print(`transferred ${planets.length} planets to dao`);
+    print(`transferred ${numTransferred} planets to dao`);
   }
 
   const handleRips = async(rips: Planet[]) => {
     /* TODO: filter this more */
-    let planetsToGift = rips.filter((p) => p.silver > 100);
+    let planetsToGift = rips
+    // let planetsToGift = rips.filter((p) => p.silver > 100);
     /* TODO remove -> this for testing purposes*/ 
     planetsToGift = planetsToGift.slice(0,2);
     print(`found ${planetsToGift.length} rips to gift`);
@@ -185,8 +211,9 @@ export function ColossusView(): JSX.Element {
     const prevScore = (await daoPlayer.contributions(wallet.address)).toNumber();
 
     // will call refreshPlanet in contract
-    print('updating owners...');
+    print('updating owners... (block needs to be mined)');
     await updatePlanetOwners(planetsToGift);
+    print(`transferring planets...`);
     await transferPlanets(planetsToGift); 
     print('processing planets...');
     await processAndReturnPlanets(planetsToGift, []);
@@ -282,12 +309,25 @@ export function ColossusView(): JSX.Element {
   }
   // TODO: import findMoveArgs type
   const processAndReturnPlanets = async (rips: Planet[], findArgsList: any[]) => {
+    const gasLimit1Planet = 200000;
     const locationIds = rips.map((p) => ethers.BigNumber.from(`0x${p.locationId}`));
-    const processTx  = await daoPlayer.processAndReturnPlanets(locationIds, findArgsList);
-    await processTx.wait();
-    print(`processed and returned ${locationIds.length} planets to player`);
 
+    const gasLimit = (rips.length > 0) ? gasLimit1Planet * rips.length : 0;
+
+    let numReturned = 0;
+    try {
+      const processTx  = await daoPlayer.processAndReturnPlanets(locationIds, findArgsList, {gasLimit: 200000 * rips.length});
+      console.log(`processTx`, processTx);
+      console.log(`gasLimit; ${processTx.gasLimit.toString()}, gasPrice: ${processTx.gasPrice.toString()}`)
+      await processTx.wait();
+      numReturned += 1;
+    } catch (error) {
+      console.log(`error processing and returning`, error);
+    }
+    print(`processed and returned ${numReturned} planets to player`);
   }
+
+
   const giftPlanets = async (planets: Planet[]) => {
 
     print(`examinining ${planets.length} planets`);
@@ -295,10 +335,21 @@ export function ColossusView(): JSX.Element {
     const rips = planets.filter((p) => p.planetType == PlanetType.TRADING_POST);
     const foundries = planets.filter((p) => p.planetType == PlanetType.RUINS);
 
-    await handleFoundries(foundries);
+    print(`gifting planets`);
+    // await returnPlanets(planets);
     await handleRips(rips);
+    await handleFoundries(foundries);
+    // await handleRips(rips);
 
   }
+
+  const returnSelected = async () => {
+    // @ts-expect-error
+    const planet = await df.getPlanetWithId(selectedPlanet)
+    // await updatePlanetOwners([planet]);
+    await processAndReturnPlanets([planet], []);
+  }
+
   
   let content;
     content = (
@@ -309,6 +360,8 @@ export function ColossusView(): JSX.Element {
         <div>
           <button onClick={getContributions}>check score</button>
           <button onClick={contribute}>contribute</button>
+          <button onClick={returnSelected}>Return Selected</button>
+          <button onClick={checkDaoOwnership}>checkDaoOwnership</button>
         </div>
       </div>
     );
