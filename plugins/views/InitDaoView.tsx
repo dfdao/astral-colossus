@@ -1,62 +1,85 @@
 import { h, JSX } from "preact";
 
-import { useEffect, useState, useLayoutEffect, useReducer, useCallback } from "preact/hooks";
-import { LocatablePlanet, LocationId, Planet, PlanetType } from "@darkforest_eth/types";
-import * as ethers from 'ethers';
-// import { Wallet } from 'ethers'; 
+import {
+  useEffect,
+  useState,
+  useLayoutEffect,
+  useReducer,
+  useCallback,
+} from "preact/hooks";
+import {
+  LocatablePlanet,
+  LocationId,
+  Planet,
+  PlanetType,
+} from "@darkforest_eth/types";
+import * as ethers from "ethers";
+// import { Wallet } from 'ethers';
 import { useWallet } from "../lib/flashbots";
-import { DarkForestCore, DarkForestGetters, Whitelist } from '@darkforest_eth/contracts/typechain';
-import { getDaoContract, getCoreContract, usePlanetName, getPlanetName, useSelectedPlanet, useCoreContract } from "../lib/darkforest";
+import {
+  DarkForestCore,
+  DarkForestGetters,
+  Whitelist,
+} from "@darkforest_eth/contracts/typechain";
+import {
+  getDaoContract,
+  getCoreContract,
+  usePlanetName,
+  getPlanetName,
+  useSelectedPlanet,
+  useCoreContract,
+} from "../lib/darkforest";
 import { COLOSSUS_ABI } from "../generated/abi";
-import { HumanColossus } from '../types';
+import { HumanColossus } from "../types";
 
-import { WHITELIST_CONTRACT_ADDRESS } from "@darkforest_eth/contracts"
+import { WHITELIST_CONTRACT_ADDRESS } from "@darkforest_eth/contracts";
 import WHITELIST_ABI from "@darkforest_eth/contracts/abis/Whitelist.json";
 
-
-
-
-const WEBSERVER_URL = 'https://api.zkga.me';
+const WEBSERVER_URL = "https://api.zkga.me";
 export function InitDaoView(): JSX.Element {
-
-
-  const provider = new ethers.providers.JsonRpcProvider('URL HERE');
-  console.log('provider', provider);
+  const provider = new ethers.providers.JsonRpcProvider("URL HERE");
+  console.log("provider", provider);
 
   // @ts-expect-error
   const wallet = new ethers.Wallet(df.getPrivateKey(), provider);
-  console.log('wallet', wallet);
+  console.log("wallet", wallet);
   // @ts-expect-error
-  console.log('rendered here df ui', df, ui);
+  console.log("rendered here df ui", df, ui);
   const coreContract = useCoreContract();
 
   const selectedPlanet = useSelectedPlanet();
   const selectedPlanetName = usePlanetName(selectedPlanet);
   // const wallet = useWallet();
 
-  
-  const deployedAddy = '0xbE84D04035Bb2D1383B147f20DFC89DF0d2c418F'
+  const deployedAddy = "0xd93C2AA349d1131BB2A6e1D3732FD41a059B5803";
 
-  const daoPlayer = new ethers.Contract(deployedAddy, COLOSSUS_ABI, wallet) as HumanColossus;
-  const whitelist = new ethers.Contract(WHITELIST_CONTRACT_ADDRESS, WHITELIST_ABI, wallet) as Whitelist;
-  
+  const daoPlayer = new ethers.Contract(
+    deployedAddy,
+    COLOSSUS_ABI,
+    wallet
+  ) as HumanColossus;
+  const whitelist = new ethers.Contract(
+    WHITELIST_CONTRACT_ADDRESS,
+    WHITELIST_ABI,
+    wallet
+  ) as Whitelist;
+
   // console.log(`connected to dao Player @ ${daoPlayer.address}`);
 
   const print = (msg: string) => {
     // @ts-expect-error
     df.terminal.current.println(msg);
-  } 
+  };
 
   const init = async () => {
-    
-    console.log('abi', COLOSSUS_ABI);
+    console.log("abi", COLOSSUS_ABI);
     // get player's privateKey
-    console.log('wallet', wallet);
+    console.log("wallet", wallet);
 
     console.log(`connected to dao Player @ ${daoPlayer.address}`);
-    const balance = await wallet.provider.getBalance(daoPlayer.address)
-    console.log('dao balance:', ethers.utils.formatEther(balance));
-    
+    const balance = await wallet.provider.getBalance(daoPlayer.address);
+    console.log("dao balance:", ethers.utils.formatEther(balance));
+
     let locatable: LocatablePlanet;
     // @ts-expect-error
     locatable = await df.findRandomHomePlanet();
@@ -72,12 +95,17 @@ export function InitDaoView(): JSX.Element {
     // const r = df.worldRadius
     // console.log('found location', locatable);
 
-    console.log('making call Args');
+    console.log("making call Args");
     // @ts-expect-error
-    const callArgs = await df.snarkHelper.getInitArgs(x,y,r);
-    console.log('call Args', callArgs);
+    const callArgs = await df.snarkHelper.getInitArgs(x, y, r);
+    console.log("call Args", callArgs);
 
-    const uInitTx = await daoPlayer.initializePlayer(callArgs[0], callArgs[1], callArgs[2], callArgs[3]);
+    const uInitTx = await daoPlayer.initializePlayer(
+      callArgs[0],
+      callArgs[1],
+      callArgs[2],
+      callArgs[3]
+    );
     console.log(`initTx`, uInitTx);
     const initReceipt = await uInitTx.wait();
     console.log(`receipt`, uInitTx);
@@ -86,7 +114,6 @@ export function InitDaoView(): JSX.Element {
     // console.log('sTx', sTx);
     // const sentTx = await wallet.sendTransaction(uInitTx);
     // console.log('senTx', sentTx);
-
   };
   const submitWhitelistKey = async (
     key: string,
@@ -94,13 +121,13 @@ export function InitDaoView(): JSX.Element {
   ): Promise<any | null> => {
     try {
       return await fetch(`${WEBSERVER_URL}/whitelist/register`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify({
           key,
           address,
         }),
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       }).then((x) => x.json());
     } catch (e) {
@@ -124,9 +151,9 @@ export function InitDaoView(): JSX.Element {
         // returning undefined here indicates to the ui that the key was invalid
         return undefined;
       } else if (response !== null && response.success) {
-        return response.txHash ?? 'unknown';
+        return response.txHash ?? "unknown";
       } else {
-        console.log('trying again...');
+        console.log("trying again...");
         await sleep(3000);
       }
     }
@@ -134,8 +161,7 @@ export function InitDaoView(): JSX.Element {
   const submitWhiteList = async () => {
     // @ts-expect-erro
     // const whitelist = df.contractsAPI.whiteListContract;
-    console.log('whitelist', whitelist);
-
+    console.log("whitelist", whitelist);
 
     // const whitelistkey = "TJ0Z2-PRJ0N-XQFSQ-2H9LI-UJM1S"
     // const whitelistkey = "2WTDV-92THW-D320O-HTLLF-8EGHY";
@@ -148,29 +174,28 @@ export function InitDaoView(): JSX.Element {
     // const iIWhitelisted = await whitelist.isWhitelisted(wallet.address);
     console.log(`${daoPlayer.address} is whitelistd? ${isWhitelisted}`);
     // console.log(`I, ${wallet.address} am whitelistd? ${iIWhitelisted}`);
-    console.log('owner?', await daoPlayer.owner());
+    console.log("owner?", await daoPlayer.owner());
 
     const p = await coreContract.players(daoPlayer.address);
     console.log(`dao`, p);
-    console.log('is initialized?', p.isInitialized);
-
-  }
+    console.log("is initialized?", p.isInitialized);
+  };
   let content;
-    content = (
+  content = (
+    <div>
       <div>
-        <div>
-          <span>Init dao.</span>
-        </div>
-        <div>
-          <button onClick={init}>Init Dao</button>
-          <button onClick={submitWhiteList}>submit white list</button>
-          {/* <button onClick={ownPlanets}>Own Planets</button>
+        <span>Init dao.</span>
+      </div>
+      <div>
+        <button onClick={init}>Init Dao</button>
+        <button onClick={submitWhiteList}>submit white list</button>
+        {/* <button onClick={ownPlanets}>Own Planets</button>
           <button onClick={changeOwnerW}>Own Selected</button>
           <button onClick={getContributions}>check score</button>
           <button onClick={contribute}>contribute</button>
           <button onClick={checkDaoOwnership}>check dao ownership</button> */}
-        </div>
       </div>
-    );
+    </div>
+  );
   return content;
 }
