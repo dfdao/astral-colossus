@@ -1,12 +1,12 @@
 import { Planet, PlanetType } from "@darkforest_eth/types";
 import { ethers, ContractReceipt } from "ethers";
 import { useState } from "preact/hooks";
-import { useContract, usePlayer, useSelectedPlanet, useColossus } from '.'
+import { useContract, usePlayer, useSelectedPlanet, useColossus, useGasPrice } from '.'
 import { getPlanetName } from "../lib/darkforest";
 
 export const useContribute = () => {
   const { colossus, coreContract } = useContract()
-  const { processAndReturnPlanets, handleFind } = useColossus()
+  const { processAndReturnPlanets, handleFind, updatePlanetOwners } = useColossus()
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -24,24 +24,6 @@ export const useContribute = () => {
     const locationIds = planets.map((p) => p.locationId);
     // @ts-expect-error
     await df.bulkHardRefreshPlanets(locationIds);
-  };
-
-  const updatePlanetOwners = async (planets: Planet[]) => {
-    // dao recognizes player as owner
-    const locationIds = planets.map((p) =>
-      ethers.BigNumber.from(`0x${p.locationId}`)
-    );
-    try {
-      const updateTx = await colossus.updatePlanetOwners(locationIds);
-      console.log(`updateTx`, updateTx);
-      const updateTxResponse = await updateTx.wait();
-      console.log(`minedUpdate`, updateTxResponse);
-    } catch (error) {
-      setError(JSON.stringify(error))
-      console.log(`error updating owners`, error);
-    }
-
-    print(`registered ${locationIds.length} planets with dao`);
   };
 
   const getRandomActionId = () => {

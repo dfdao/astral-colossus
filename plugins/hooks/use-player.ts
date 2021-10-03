@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, BigNumber } from "ethers";
 
 const CORE_CONTRACT_ADDRESS = '0x27a166aE00C33Bef64306760aCd7C9fD3c2fEB74'
 
@@ -28,9 +28,10 @@ export function getSetting(account: any | undefined, setting: any): string {
   return valueInStorage;
 }
 
-export const useGasPrice = (): string => {
+export const useGasPrice = (): BigNumber => {
   // @ts-expect-error
-  return getSetting(df.account, GAS_KEY);
+  const gasInGwei = getSetting(df.account, GAS_KEY);
+  return ethers.utils.parseUnits(gasInGwei, "gwei");
 }
 
 export const usePlayer = () => {

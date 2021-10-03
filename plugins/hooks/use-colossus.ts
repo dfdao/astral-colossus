@@ -7,7 +7,7 @@ export function useColossus() {
   const { colossus } = useContract()
   const player = usePlayer()
   const selectedPlanet = useSelectedPlanet();
-  const gasPrice = ethers.utils.parseUnits(useGasPrice(), "gwei");
+  const gasPrice = useGasPrice();
 
   const print = (msg: string) => {
     // @ts-expect-error
