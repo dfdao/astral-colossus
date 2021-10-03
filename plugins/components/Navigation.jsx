@@ -55,7 +55,7 @@ export function Navigation({ tabs }) {
           />
         ))}
         <div style={{ textAlign: "right" }}>
-          {loading ? <Loading /> : contributions}
+          {contributions ? contributions : null}
         </div>
       </div>
     </div>

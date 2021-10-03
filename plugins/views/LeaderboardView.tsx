@@ -3,6 +3,7 @@ import { useLeaderboard } from "../hooks";
 import { PlayerName } from "../components/PlayerName";
 import { Loading } from "../components/Loading";
 import { ErrorLabel } from "../components/ErrorLabel";
+import { playerColor } from "../helpers/df";
 
 const styles = {
   view: {
@@ -13,6 +14,9 @@ const styles = {
     display: "flex",
     gap: 8,
   },
+  score: {
+    marginLeft: "auto",
+  },
 };
 
 export function LeaderboardView() {
@@ -22,11 +26,13 @@ export function LeaderboardView() {
     <div style={styles.view}>
       <div style={styles.leaderboard}>
         {leaderboard.map(({ rank, address, score }) => {
+          const color = playerColor(address);
+
           return (
-            <div style={styles.entry} key={rank}>
-              <p>{rank}</p>
+            <div style={{ ...styles.entry, color }} key={rank}>
+              <p>{rank}.</p>
               <PlayerName address={address} />
-              <p>{score}</p>
+              <p style={styles.score}>{score}</p>
             </div>
           );
         })}
