@@ -6,7 +6,18 @@ import { getPlanetName } from "../lib/darkforest";
 
 export const useContribute = () => {
   const { colossus, coreContract } = useContract()
-  const { processAndReturnPlanets, handleFind, updatePlanetOwners } = useColossus()
+  const { 
+    processAndReturnPlanets, 
+    handleFind, 
+    updatePlanetOwners, 
+    transferPlanets,
+    getRandomActionId,
+    getProspectablePlanets,
+    isFindable,
+    confirmedDaoOwners,
+    confirmedPlayerOwners,
+    confirmedRegisteredPlanets
+  } = useColossus()
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -24,98 +35,6 @@ export const useContribute = () => {
     const locationIds = planets.map((p) => p.locationId);
     // @ts-expect-error
     await df.bulkHardRefreshPlanets(locationIds);
-  };
-
-  const getRandomActionId = () => {
-    const hex = "0123456789abcdef";
-
-    let ret = "";
-    for (let i = 0; i < 10; i += 1) {
-      ret += hex[Math.floor(hex.length * Math.random())];
-    }
-    return ret;
-  };
-
-  /* similar to gift empire */
-  const transferPlanets = async (planets: Planet[]) => {
-    print(`transferring ${planets.length} planets to the dao...`);
-    let numTransferred = 0;
-
-    try {
-      let results = await Promise.all(
-        planets.map((p) => {
-          const actionId = getRandomActionId();
-          // @ts-expect-error
-          return df.contractsAPI.transferOwnership(
-            p.locationId,
-            colossus.address,
-            actionId
-          );
-        })
-      );
-      numTransferred = results.length;
-      print(`transferOwnership txs are mined!`);
-    } catch (error) {
-      console.log(`error mining transfer calls`, error);
-      setError(`error mining transfer calls: ${JSON.stringify(error)}`)
-    }
-
-    await bulkUiRefresh(planets);
-    print(`transferred ${numTransferred} planets to dao`);
-  };
-
-
-  const confirmedRegisteredPlanets = async (planets: Planet[]) => {
-    let confirmedPlanets: Array<Planet> = [];
-    for (let p of planets) {
-      const pName = getPlanetName(p.locationId);
-      const id = ethers.BigNumber.from(`0x${p.locationId}`);
-      const registrar = await colossus.planetOwners(id);
-
-      if (registrar == player.address) {
-        confirmedPlanets.push(p);
-        print(`dao recognizes ${pName} is owned by player`);
-      } else {
-        print(`dao DOESNT recognize ${pName} is owned by player`);
-      }
-    }
-    return confirmedPlanets;
-  };
-  
-  const confirmedDaoOwners = async (planets: Planet[]) => {
-    // await bulkPlanetRefresh(planets);
-    let confirmedPlanets = [];
-    for (let p of planets) {
-      console.log(`confirmed check`, p);
-      const pName = getPlanetName(p.locationId);
-      const id = ethers.BigNumber.from(`0x${p.locationId}`);
-      console.log('AA', coreContract, id)
-      const planet = await coreContract.planets(id);
-      if (planet.owner == colossus.address) {
-        confirmedPlanets.push(p);
-        print(`${pName} is owned by dao`);
-      } else {
-        print(`${pName} is not owned by dao`);
-      }
-    }
-    return confirmedPlanets;
-  };
-  const confirmedPlayerOwners = async (planets: Planet[]) => {
-    // await bulkPlanetRefresh(planets);
-    let confirmedPlanets = [];
-    for (let p of planets) {
-      console.log(`confirmed check`, p);
-      const pName = getPlanetName(p.locationId);
-      const id = ethers.BigNumber.from(`0x${p.locationId}`);
-      const planet = await coreContract.planets(id);
-      if (planet.owner == player.address) {
-        confirmedPlanets.push(p);
-        print(`${pName} is owned by player`);
-      } else {
-        print(`${pName} is not owned by player`);
-      }
-    }
-    return confirmedPlanets;
   };
 
   const handleRips = async (rips: Planet[]) => {
@@ -139,58 +58,12 @@ export const useContribute = () => {
     print(`registered ${confirmedRegistered.length} owners`);
     print(`transferring ${confirmedRegistered.length} planets to dao`);
     await transferPlanets(confirmedRegistered);
+    await bulkUiRefresh(confirmedRegistered);
     const confirmedOwned = await confirmedDaoOwners(confirmedRegistered);
     print(`transferred ${confirmedOwned.length} planets to dao`);
     print(`processing and returning ${confirmedOwned.length} planets...`);
     await processAndReturnPlanets(confirmedOwned, []);
     const returned = confirmedPlayerOwners(confirmedOwned);
-  };
-
-
-  const energy = (planet: Planet) => {
-    return Math.floor((planet.energy / planet.energyCap) * 100);
-  };
-
-  const isFoundry = (planet: Planet) => {
-    return planet.planetType == PlanetType.RUINS;
-  };
-
-  const canHaveArtifact = (planet: Planet) => {
-    return isFoundry(planet) && !planet.hasTriedFindingArtifact;
-  };
-
-  const enoughEnergyToProspect = (planet: Planet) => {
-    return energy(planet) >= 96;
-  };
-
-  function isProspectable(planet: Planet) {
-    return (
-      isFoundry(planet) &&
-      planet.prospectedBlockNumber === undefined &&
-      !planet.unconfirmedProspectPlanet
-    );
-  }
-
-  const getProspectablePlanets = async (planets: Planet[]) => {
-    let prospectablePlanets = planets
-      .filter(canHaveArtifact)
-      .filter(isProspectable)
-      .filter(enoughEnergyToProspect);
-
-    return prospectablePlanets;
-  };
-
-
-  /* reads on-chain data to confirm */
-  const isFindable = (planetDetails: any, currentBlockNumber: number) => {
-    const pName = getPlanetName(planetDetails[0][0]);
-    print(`examining ${pName}`);
-    const prospectedBlockNumber = planetDetails[1][10];
-    const hasTriedFindingArtifact = planetDetails[1][9];
-    print(
-      `prospected # ${prospectedBlockNumber}\nalready tried to find? ${hasTriedFindingArtifact}`
-    );
-    return prospectedBlockNumber !== 0 && !hasTriedFindingArtifact
   };
 
   const handleFoundries = async (foundries: Planet[]) => {
@@ -255,6 +128,7 @@ export const useContribute = () => {
           // transfer ownership
           // await handleFind(p, confirmedRegistered);
           await transferPlanets([p]);
+          await bulkUiRefresh([p]);
           const confirmedOwned = await confirmedDaoOwners(confirmedRegistered);
           print(`transferred ${confirmedOwned.length} planets to dao`);
           await handleFind(p);
