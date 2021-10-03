@@ -1,5 +1,6 @@
 import { h } from "preact";
 import { useLeaderboard } from "../hooks";
+import { PlayerName } from "../components/PlayerName";
 import { Loading } from "../components/Loading";
 import { ErrorLabel } from "../components/ErrorLabel";
 
@@ -8,7 +9,10 @@ const styles = {
     padding: 8,
   },
   leaderboard: {},
-  entry: {},
+  entry: {
+    display: "flex",
+    gap: 8,
+  },
 };
 
 export function LeaderboardView() {
@@ -17,12 +21,12 @@ export function LeaderboardView() {
   return (
     <div style={styles.view}>
       <div style={styles.leaderboard}>
-        {leaderboard.map(({ address, score }) => {
+        {leaderboard.map(({ rank, address, score }) => {
           return (
-            <div style={styles.entry} key={address}>
-              <p>
-                {address}:{score}
-              </p>
+            <div style={styles.entry} key={rank}>
+              <p>{rank}</p>
+              <PlayerName address={address} />
+              <p>{score}</p>
             </div>
           );
         })}

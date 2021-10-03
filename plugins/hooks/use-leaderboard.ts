@@ -1,9 +1,10 @@
 import { useState, useEffect } from "preact/hooks";
-import { useContract, usePlayer } from ".";
+import { useContract } from ".";
 
 type Score = {
   address: string
   score: number
+  rank: number
 }
 
 export const useLeaderboard = () => {
@@ -23,9 +24,12 @@ export const useLeaderboard = () => {
           const playerScore = await colossus.contributions(address);
           const score = Number(playerScore)
           console.log(`addy ${address} score ${score}`);
-          lb.push({ address, score })
+          lb.push({ address, score, rank: 0 })
         }
-        setLeaderboard(lb)
+        const leaderboardRanked = lb.sort((a, b) => a.score - b.score ).map((entry, index) => {
+          return {...entry, rank: index + 1 }
+        })
+        setLeaderboard(leaderboardRanked)
         if (loading) setLoading(false)
       }).catch(setError)
 
