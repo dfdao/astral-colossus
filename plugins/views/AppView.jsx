@@ -17,7 +17,7 @@ export function AppView({ contract, coreContract }) {
             tabs={[
               { name: "Contribute", TabContent: ContributeView },
               { name: "Leaderboard", TabContent: LeaderboardView },
-              { name: "History", TabContent: HistoryView },
+              // { name: "History", TabContent: HistoryView },
               { name: "Help", TabContent: HelpView },
             ]}
           />
