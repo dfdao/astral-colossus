@@ -388,7 +388,8 @@ export function ColossusView(): JSX.Element {
         print(`prospected block number ${prospectReceipt.blockNumber}`);
         print(`prospected succeeded: ${prospectReceipt.status}`);
         prospectStatus = prospectTxReceipt.status;
-        await bulkUiRefresh(planetsToGift);
+        // @ts-expect-error
+        await df.hardRefresh(p.locationId)
       } catch(error) {
         console.log(error); 
         print(`prospecting ${pName} failed. Trying next planet`)
