@@ -9,6 +9,7 @@ interface IDarkForestCore {
         address owner;
         uint256 range;
         uint256 speed;
+        
         uint256 defense;
         uint256 population;
         uint256 populationCap;
@@ -90,7 +91,7 @@ interface IDarkForestTokens {
 }
 
 
-contract DaoContractPlayer {
+contract HumanColossus {
     event Contribution(address indexed player, uint256 indexed points);
 
     struct FoundryData {
@@ -100,7 +101,6 @@ contract DaoContractPlayer {
         uint256[7] input;
     }
     
-    // Number of players => player address
     uint256 public playerCounter;
 
     mapping(uint256 => address) public players;
@@ -147,12 +147,6 @@ contract DaoContractPlayer {
     }
     
     function updatePlanetOwners(uint256[] calldata _planetIds) external {
-        // add new players to the mapping
-        if(contributions[msg.sender] == 0) {
-          players[playerCounter] = msg.sender;
-          playerCounter++;
-        }
-
         for (uint256 i = 0; i < _planetIds.length; i++) {
             uint256 planetId = _planetIds[i];
             planetOwners[planetId] = getRefreshedPlanet(planetId).owner;
@@ -170,14 +164,21 @@ contract DaoContractPlayer {
         uint256[] calldata _spacetimeRipIds,
         FoundryData[] calldata _foundriesData
     ) external {
+        uint256 currContribution;
         for (uint256 i = 0; i < _spacetimeRipIds.length; i++) {
             uint256 planetId = _spacetimeRipIds[i];
             IDarkForestCore.Planet memory planet = getRefreshedPlanet(planetId);
             if (planet.owner != address(this)) continue;
             if (planet.silver > 100) {
+                // add new players to the mapping
+                if(contributions[msg.sender] == 0) {
+                  players[playerCounter] = msg.sender;
+                  playerCounter++;
+                }
                 coreContract.withdrawSilver(planetId, planet.silver);
                 contributions[msg.sender] += planet.silver;
-                emit Contribution(msg.sender, planet.silver);
+
+                currContribution += planet.silver;
             }
             returnPlanet(planetId);
         }
@@ -185,13 +186,18 @@ contract DaoContractPlayer {
         for (uint256 i = 0; i < _foundriesData.length; i++) {
             FoundryData calldata foundryData = _foundriesData[i];
             try coreContract.findArtifact(foundryData.a, foundryData.b, foundryData.c, foundryData.input) {
+              // add new players to the mapping
+              if(contributions[msg.sender] == 0) {
+                players[playerCounter] = msg.sender;
+                playerCounter++;
+              }
               // most recent artifact will be at the end of the array
               uint256 planetId = foundryData.input[0];
               uint256[] memory artifacts = coreContract.planetArtifacts(planetId);
               uint256 foundArtifactId = artifacts[artifacts.length - 1];
               IDarkForestTokens.Artifact memory foundArtifact = tokensContract.getArtifact(foundArtifactId);
               contributions[msg.sender] += ARTIFACT_POINT_VALUES[uint256(foundArtifact.rarity)];
-              emit Contribution(msg.sender, ARTIFACT_POINT_VALUES[uint256(foundArtifact.rarity)]);
+              currContribution += ARTIFACT_POINT_VALUES[uint256(foundArtifact.rarity)];
             }
             catch (bytes memory reason) {
                 /* return the planet in all cases except if when player doesn't own artifact */
@@ -199,6 +205,9 @@ contract DaoContractPlayer {
             }
             returnPlanet(foundryData.input[0]);
         }
+        emit Contribution(msg.sender, currContribution);
+
+
     }
     receive() external payable {}
 }

@@ -13,9 +13,9 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
-      name: "DaoContractPlayer",
+      name: "HumanColossus",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.DaoContractPlayer__factory>;
+    ): Promise<Contracts.HumanColossus__factory>;
     getContractFactory(
       name: "IDarkForestCore",
       signerOrOptions?: ethers.Signer | FactoryOptions

@@ -1,6 +1,6 @@
 import { COLOSSUS_ABI } from "../generated/abi";
 import { COLOSSUS_ADDRESS } from "../generated/contract";
-import { DaoContractPlayer } from "../types";
+import { HumanColossus } from "../types";
 import { Planet, PlanetType } from "@darkforest_eth/types";
 import type { DarkForestCore } from "@darkforest_eth/contracts/typechain";
 
@@ -22,7 +22,7 @@ export function getAccount() {
 export async function getContract() {
   return {
     // @ts-expect-error
-    colossus: await df.loadContract(COLOSSUS_ADDRESS, COLOSSUS_ABI) as DaoContractPlayer,
+    colossus: await df.loadContract(COLOSSUS_ADDRESS, COLOSSUS_ABI) as HumanColossus,
     colossusAddress: COLOSSUS_ADDRESS,
     colossusABI: COLOSSUS_ABI,
   };
