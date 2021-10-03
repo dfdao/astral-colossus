@@ -123,7 +123,6 @@ const ContractButtons: FunctionComponent = ({ children }) => {
       <Button onClick={returnSelected}>Return Selected</Button>
       <Button onClick={checkDaoOwnership}>Check Ownership</Button>
       <Button onClick={readyToFind}>Find?</Button>
-      <Button onClick={registerOwnership}>register selected</Button>
     </div>
   );
 };

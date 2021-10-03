@@ -152,12 +152,8 @@ export function useColossus() {
     // dao recognizes player as owner
     const pName = getPlanetName(selectedPlanet);
     const pBigNumber = ethers.BigNumber.from(`0x${selectedPlanet}`);
-    // const updateTx = await colossus.updatePlanetOwners([pBigNumber]);
-    // await updateTx.wait();
-    // const result = colossus.interface.decodeFunctionData("updatePlanetOwners", updateTx.data);
     const owner = await colossus.planetOwners(pBigNumber);
     print(`dao says ${pName} is owned by ${owner}`);
-    // console.log("tx result", result);
   };
 
   // TODO: import findMoveArgs type
@@ -251,7 +247,6 @@ export function useColossus() {
     } else if (planet.planetType == PlanetType.TRADING_POST) {
       await processAndReturnPlanets([planet], []);
     }
-    // await updatePlanetOwners([planet]);
   };
 
 
@@ -290,6 +285,13 @@ export function useColossus() {
     const locationIds = ownedPlanets.map((p) =>
       ethers.BigNumber.from(`0x${p.locationId}`)
     );
+
+    console.log(`locIDs`, locationIds);
+    if (locationIds.length == 0) {
+      print(`no owned planets to register with dao`);
+      return;
+    }
+    
     try {
       console.log(`gasPrice`, gasPrice, typeof(gasPrice));
       const updateTx = await colossus.updatePlanetOwners(locationIds, { gasPrice });
