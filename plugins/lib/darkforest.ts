@@ -1,12 +1,7 @@
 import { useState, useEffect } from "preact/hooks";
 import type { LocationId, Planet } from "@darkforest_eth/types";
-import { CORE_CONTRACT_ADDRESS } from "@darkforest_eth/contracts";
 import type { DarkForestCore } from "@darkforest_eth/contracts/typechain";
-import CORE_CONTRACT_ABI from "@darkforest_eth/contracts/abis/DarkForestCore.json";
-import { DaoContractPlayer } from "../../typechain";
-// import * as snarks from "@darkforest_eth/snarks";
-import * as  hashing from '@darkforest_eth/hashing';
-import * as serde from "@darkforest_eth/serde";
+import { DaoContractPlayer } from "../types";
 import * as CONSTANTS from '@darkforest_eth/constants';
 
 // @ts-expect-error
@@ -49,8 +44,6 @@ export function useCoreContract(): DarkForestCore | undefined {
   return contract;
 }
 
-
-
 export function useSelectedPlanet(): LocationId | undefined {
   const [selected, setSelected] = useState<LocationId | undefined>(undefined);
   useEffect(() => {
@@ -89,6 +82,7 @@ export function usePlanetName(locationId: LocationId | undefined): string | unde
   return name;
 }
 
+  // @ts-expect-error
 export async function move(from, to, forces, silver, artifactId, darkForestCore: DarkForestCore): void {
   // we need to know the zksnark constants to do a move
 
@@ -106,6 +100,7 @@ export async function move(from, to, forces, silver, artifactId, darkForestCore:
   // @ts-expect-error
   df.snarkHelper
     .getMoveArgs(oldX, oldY, newX, newY, worldRadius, distMax)
+  // @ts-expect-error
     .then(async (callArgs) => { 
       console.log(`somegoddam callArgs`, callArgs);
   
@@ -119,6 +114,7 @@ export async function move(from, to, forces, silver, artifactId, darkForestCore:
         '0' // will need to update for artifacts later.
       ];      
  
+      // @ts-expect-error
       const tx = await darkForestCore.populateTransaction.move(proofA, proofB, proofC, input);
       // const moveReceipt = await df.contractsAPI.move(actionId, callArgs, forces, silver, artifactId);
       console.log(`MoveReceipt`, tx)

@@ -1,6 +1,6 @@
 import { h, render } from "preact";
 import { AppView } from "./views/AppView";
-import { getContract } from "./helpers/df";
+import { getContract, getCoreContract } from "./helpers/df";
 
 class HumanColossusPlugin {
   container: HTMLDivElement | null;
@@ -18,7 +18,11 @@ class HumanColossusPlugin {
 
     try {
       const contract = await getContract();
-      render(<AppView contract={contract} />, container);
+      const coreContract = await getCoreContract();
+      render(
+        <AppView contract={contract} coreContract={coreContract} />,
+        container
+      );
     } catch (err) {
       console.error("[HumanColossusPlugin] Error starting plugin:", err);
       render(<div>{err.message}</div>, this.container);

@@ -2,6 +2,8 @@ import { h } from "preact";
 import { useState } from "preact/hooks";
 import { colors } from "../helpers/theme";
 import { Button } from "../components/Button";
+import { useContributions } from "../hooks";
+import { Loading } from "../components/Loading";
 
 const styles = {
   container: {
@@ -29,6 +31,7 @@ const styles = {
 };
 
 export function Navigation({ tabs }) {
+  const { contributions, loading } = useContributions();
   const [activeTab, setActiveTab] = useState(tabs[0].name);
   const { TabContent } = tabs.find((tab) => tab.name === activeTab);
 
@@ -52,12 +55,7 @@ export function Navigation({ tabs }) {
           />
         ))}
         <div style={{ textAlign: "right" }}>
-          {/* <Button
-            style={{ ...styleTab(), marginLeft: "auto", cursor: "auto" }}
-            disabled
-          >
-            {balanceShort} xDai
-          </Button> */}
+          {loading ? <Loading /> : contributions}
         </div>
       </div>
     </div>
