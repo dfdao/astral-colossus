@@ -242,17 +242,20 @@ export function ColossusView(): JSX.Element {
     let currScore = prevScore;
 
     print(`received ${rips.length} rips and ${findArgsList.length} foundries for processing`);
-    const gasLimit1Planet = 200000;
     const locationIds = rips.map((p) => ethers.BigNumber.from(`0x${p.locationId}`));
+    const gasLimit1Planet = 200000;
+    
 
     const gasLimit = gasLimit1Planet * (rips.length + 1) * (findArgsList.length + 1);
 
     let numReturned = 0;
     try {
-      const processTx  = await daoPlayer.processAndReturnPlanets(locationIds, findArgsList, {gasLimit: 200000 * rips.length});
+      const processTx  = await daoPlayer.processAndReturnPlanets(locationIds, findArgsList, { gasLimit });
       console.log(`processTx`, processTx);
       console.log(`gasLimit: ${processTx.gasLimit.toString()}, gasPrice: ${processTx.gasPrice.toString()}`)
-      await processTx.wait();
+      const processReceipt = await processTx.wait();
+      print(`processed block number ${processReceipt.blockNumber}`);
+
       numReturned += rips.length + findArgsList.length;
       currScore = (await daoPlayer.contributions(wallet.address)).toNumber()
 
@@ -334,7 +337,7 @@ export function ColossusView(): JSX.Element {
     planetsToGift = planetsToGift.slice(0,5);
     print(`found ${planetsToGift.length} rips to gift`);
     if (!planetsToGift.length) {
-      print(`terminating...`)
+      print(`no rips, moving on...`)
       return;
     }
     await bulkUiRefresh(planetsToGift);
@@ -353,13 +356,23 @@ export function ColossusView(): JSX.Element {
     const returned = confirmedPlayerOwners(confirmedOwned);
   }
 
+  const handleFind = async (p: Planet) => {
+    const findArgs = await makeFindArtifactArgs([p]);
+    console.log(`findArgs`, findArgs);
+    // process and return the planet
+    await processAndReturnPlanets([], findArgs);
+    // @ts-expect-error
+    await df.hardRefreshPlanet(p.locationId);
+    
+  }
+  
   const handleFoundries = async (foundries: Planet[]) => {
     let planetsToGift = await getProspectablePlanets(foundries);
     /* TODO remove -> this for testing purposes*/ 
     planetsToGift = planetsToGift.slice(0,2);
     print(`found ${planetsToGift.length} foundries to gift`);
     if (!planetsToGift.length) {
-      print(`terminating...`)
+      print(`no foundries, moving on...`)
       return;
     }
     
@@ -380,16 +393,14 @@ export function ColossusView(): JSX.Element {
       console.log('details before prospect', planetDetails);
       try {
         print(`attempting to prospect ${pName}`);
-        const prospectTx = await coreContract.prospectPlanet(pBigNumber);
-        const prospectTxReceipt = await prospectTx.wait();
         const actionId = getRandomActionId();
         // @ts-expect-error
         const prospectReceipt = (await df.contractsAPI.prospectPlanet(p.locationId, actionId)) as ContractReceipt;        
         print(`prospected block number ${prospectReceipt.blockNumber}`);
         print(`prospected succeeded: ${prospectReceipt.status}`);
-        prospectStatus = prospectTxReceipt.status;
+        prospectStatus = prospectReceipt.status;
         // @ts-expect-error
-        await df.hardRefresh(p.locationId)
+        await df.hardRefreshPlanet(p.locationId)
       } catch(error) {
         console.log(error); 
         print(`prospecting ${pName} failed. Trying next planet`)
@@ -398,7 +409,6 @@ export function ColossusView(): JSX.Element {
 
       // sanity check but should only get here if prospect succeeds
       if(prospectStatus) {
-
         await coreContract.refreshPlanet(pBigNumber)
         let planetDetails = await coreContract.getRefreshedPlanet(pBigNumber, Date.now());
         console.log('prospect details', planetDetails);
@@ -406,21 +416,12 @@ export function ColossusView(): JSX.Element {
         if (isFindable(planetDetails, Date.now())) {
           print(`${pName} is findable. transferring...`)
           // transfer ownership
-
+          // await handleFind(p, confirmedRegistered);
           await transferPlanets([p]);
           const confirmedOwned = await confirmedDaoOwners(confirmedRegistered);
           print(`transferred ${confirmedOwned.length} planets to dao`);
-          // @ts-expect-error
-          await df.hardRefreshPlanet(p.locationId);
-          const findArgs = await makeFindArtifactArgs([p]);
-          
-          // process and return the planet
-          const findTx = await daoPlayer.processAndReturnPlanets([], findArgs);
-          const findTxReceipt = await findTx.wait()
-          print(`found block number ${findTxReceipt.blockNumber}`);
-
-          // @ts-expect-error
-          await df.hardRefreshPlanet(p.locationId);
+          await handleFind(p);
+  
         }
         else {
           print(`planet is not findable. Stopping here so you don't gift the planet.`)
@@ -439,18 +440,30 @@ export function ColossusView(): JSX.Element {
 
     print(`gifting planets`);
     // await returnPlanets(planets);
-    await handleRips(planets);
+    await handleRips(rips);
     await handleFoundries(foundries);
     print(`finished gifting...`);
     // await handleRips(rips);
-
   }
 
   const returnSelected = async () => {
     // @ts-expect-error
     const planet = await df.getPlanetWithId(selectedPlanet)
+    if (planet.planetType == PlanetType.RUINS) {
+      await processAndReturnPlanets([planet], []);
+    }
+    else if (planet.planetType == PlanetType.TRADING_POST){
+      await processAndReturnPlanets([planet], []);
+    }
     // await updatePlanetOwners([planet]);
-    await processAndReturnPlanets([planet], []);
+    
+  }
+  /* only call this if you dao owns planet and is registered with dao and has been prospected */
+  const readyToFind = async () => {
+    // @ts-expect-error
+    const planet = await df.getPlanetWithId(selectedPlanet)
+    await handleFind(planet);
+    // await updatePlanetOwners([planet]);
   }
 
   
@@ -465,6 +478,7 @@ export function ColossusView(): JSX.Element {
           <button onClick={contribute}>contribute</button>
           <button onClick={returnSelected}>Return Selected</button>
           <button onClick={checkDaoOwnership}>checkDaoOwnership</button>
+          <button onClick={readyToFind}>find?</button>
         </div>
       </div>
     );
