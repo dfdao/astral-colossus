@@ -22,8 +22,6 @@ const styles = {
 
 export function ContributeView() {
   const contributeProps = useContribute();
-  const { contribute, loading } = contributeProps;
-
   const selectedPlanet = useSelectedPlanet();
   // @ts-expect-error
   const planet = df.getPlanetWithId(selectedPlanet) as Planet;
@@ -68,12 +66,6 @@ export function ContributeView() {
         <p>
           The Foundry "{planetName}" is eligible to contribute to the Colossus.
         </p>
-        <br />
-        <ContractButtons>
-          <Button theme="success" onClick={contribute} disabled={loading}>
-            Contribute
-          </Button>
-        </ContractButtons>
       </StatusContainer>
     );
 
@@ -84,12 +76,6 @@ export function ContributeView() {
           The Spacetime Rip "{planetName}" is eligible to contribute{" "}
           {planet.silver} silver to the Colossus.
         </p>
-        <br />
-        <ContractButtons>
-          <Button theme="success" onClick={contribute} disabled={loading}>
-            Contribute
-          </Button>
-        </ContractButtons>
       </StatusContainer>
     );
 
@@ -109,7 +95,7 @@ interface StatusContainerProps {
 }
 
 const StatusContainer: FunctionComponent<StatusContainerProps> = (props) => {
-  const { status, loading, error, success, children } = props;
+  const { contribute, status, loading, error, success, children } = props;
 
   return (
     <div style={styles.view}>
@@ -118,6 +104,12 @@ const StatusContainer: FunctionComponent<StatusContainerProps> = (props) => {
       <WarningLabel warning={status} />
       <SuccessLabel success={success && "Operation Complete"} />
       {loading && <Loading />}
+      <br />
+      <ContractButtons>
+        <Button theme="success" onClick={contribute} disabled={loading}>
+          Contribute
+        </Button>
+      </ContractButtons>
     </div>
   );
 };

@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "hardhat compile && hardhat test",
-    "serve": "df-plugin-dev-server --glob plugins/*.tsx --preact"
+    "serve": "df-plugin-dev-server --glob plugins/*.tsx --preact",
+    "build": "df-plugin-dev-server bundle --glob plugins/*.tsx --outdir=web --preact"
   },
   "author": "",
   "license": "ISC",
