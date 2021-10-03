@@ -5,3 +5,4 @@ export { useContribute } from "./use-contribute";
 export { useContributions } from "./use-contributions";
 export { useLeaderboard } from "./use-leaderboard";
 export { usePlayer, useGasPrice } from "./use-player";
+export { useStore } from "./use-store";

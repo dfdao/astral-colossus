@@ -17,7 +17,7 @@ export const useContributions = () => {
         if (loading) setLoading(false)
       }).catch(setError)
     }
-    const interval = setInterval(getContributions, 5000)
+    const interval = setInterval(getContributions, 10000)
     getContributions()
     return () => clearInterval(interval)
   }, [])

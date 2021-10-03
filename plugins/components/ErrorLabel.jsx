@@ -2,7 +2,7 @@ import { h } from "preact";
 import { colors } from "../helpers/theme";
 
 const styles = {
-  marginBottom: 16,
+  marginBottom: 8,
   padding: 8,
   color: colors.dfred,
 };

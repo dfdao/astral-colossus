@@ -2,8 +2,7 @@ import { h } from "preact";
 import { useState } from "preact/hooks";
 import { colors } from "../helpers/theme";
 import { Button } from "../components/Button";
-import { useContributions } from "../hooks";
-import { Loading } from "../components/Loading";
+import { useContributions, useStore } from "../hooks";
 
 const styles = {
   container: {
@@ -31,7 +30,8 @@ const styles = {
 };
 
 export function Navigation({ tabs }) {
-  const { contributions, loading } = useContributions();
+  const { isContributing } = useStore();
+  const { contributions } = useContributions();
   const [activeTab, setActiveTab] = useState(tabs[0].name);
   const { TabContent } = tabs.find((tab) => tab.name === activeTab);
 
@@ -52,6 +52,7 @@ export function Navigation({ tabs }) {
             style={styleTab(tab.name === activeTab)}
             onClick={() => setActiveTab(tab.name)}
             children={tab.name}
+            disabled={isContributing}
           />
         ))}
         <div style={{ textAlign: "right" }}>

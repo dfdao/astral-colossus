@@ -1,11 +1,12 @@
 import { Planet, PlanetType } from "@darkforest_eth/types";
 import { ethers, ContractReceipt } from "ethers";
 import { useState } from "preact/hooks";
-import { useContract, usePlayer, useSelectedPlanet, useColossus, useGasPrice } from '.'
+import { useContract, useSelectedPlanet, useColossus, useStore } from '.'
 import { getPlanetName } from "../lib/darkforest";
 
 export const useContribute = () => {
-  const { colossus, coreContract } = useContract()
+  const { isContributing, setIsContributing } = useStore()
+  const { coreContract } = useContract()
   const { 
     processAndReturnPlanets, 
     handleFind, 
@@ -19,11 +20,11 @@ export const useContribute = () => {
     confirmedRegisteredPlanets
   } = useColossus()
   const [status, setStatus] = useState('')
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const player = usePlayer()
   const selectedPlanet = useSelectedPlanet();
+  const loading = isContributing
+  const setLoading = setIsContributing
 
   const print = (msg: string) => {
     // @ts-expect-error
@@ -52,7 +53,7 @@ export const useContribute = () => {
     await bulkUiRefresh(planetsToGift);
 
     // will call refreshPlanet in contract
-    print("updating owners... (block needs to be mined)");
+    print("updating owners... (block needs to be mined, see df console for tx link)");
     await updatePlanetOwners(planetsToGift);
     const confirmedRegistered = await confirmedRegisteredPlanets(planetsToGift);
     print(`registered ${confirmedRegistered.length} owners`);
@@ -160,6 +161,7 @@ export const useContribute = () => {
 
   const contribute = async () => {
     setLoading(true)
+    setSuccess(false)
     // @ts-expect-error
     const planet = await df.getPlanetWithId(selectedPlanet);
     console.log(`sending planet to gift: `, planet);

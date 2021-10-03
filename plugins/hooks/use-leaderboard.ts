@@ -7,6 +7,17 @@ type Score = {
   rank: number
 }
 
+type ScoreOfficial = {
+  ethAddress: string
+  score: number
+  twitter?: string
+}
+
+async function downloadLeaderboard() {
+	return fetch('https://api.zkga.me/leaderboard')
+		.then(response => response.json())
+}
+
 export const useLeaderboard = () => {
   const { colossus } = useContract()
   const [leaderboard, setLeaderboard] = useState<Score[]>([])
@@ -16,7 +27,12 @@ export const useLeaderboard = () => {
   if (error) console.log(error)
 
   useEffect(() => {
-    const getContributions = () => {
+    const getContributions = async () => {
+      const officialLeaderboard = await downloadLeaderboard()
+      const getLeaderboardPlayer = (address: string) => officialLeaderboard.entries.find((entry: ScoreOfficial) => {
+        entry.ethAddress === address
+      })
+      console.log('lb', officialLeaderboard.entries)
       return colossus.playerCounter().then(async count => {
         const lb = []
         for(let i = 0; i < Number(count); i++) {
@@ -35,7 +51,7 @@ export const useLeaderboard = () => {
 
 
     }
-    const interval = setInterval(getContributions, 5000)
+    const interval = setInterval(getContributions, 10000)
     getContributions()
     return () => clearInterval(interval)
   }, [])
