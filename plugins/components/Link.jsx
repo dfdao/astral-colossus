@@ -2,7 +2,7 @@ import { h } from "preact";
 import { colors } from "../helpers/theme";
 import { useState } from "preact/hooks";
 
-export function Link({ url, text }) {
+export function Link({ url, text = "" }) {
   const [isActive, setIsActive] = useState(false);
 
   const style = {
