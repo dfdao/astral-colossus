@@ -1,12 +1,13 @@
 import { Planet, PlanetType } from "@darkforest_eth/types";
 import { ethers } from "ethers";
 import { getPlanetName } from "../lib/darkforest";
-import { useContract, usePlayer, useSelectedPlanet, useCoreContract } from '.'
+import { useContract, usePlayer, useSelectedPlanet, useCoreContract, useGasPrice } from '.'
 
 export function useColossus() {
   const { colossus } = useContract()
   const player = usePlayer()
   const selectedPlanet = useSelectedPlanet();
+  const gasPrice = ethers.utils.parseUnits(useGasPrice(), "gwei");
 
   const print = (msg: string) => {
     // @ts-expect-error
@@ -65,21 +66,25 @@ export function useColossus() {
     const locationIds = rips.map((p) =>
       ethers.BigNumber.from(`0x${p.locationId}`)
     );
-    const gasLimit1Planet = 1000000;
-
-    const gasLimit =
-      gasLimit1Planet * (rips.length + 1) * (findArgsList.length + 1);
-
+ 
     let numReturned = 0;
+    console.log(`colossus in process`, colossus);
     try {
+      const gasEstimate = await colossus.estimateGas.processAndReturnPlanets(
+        locationIds,
+        findArgsList,
+      );
+      print(`gas estimate for process and return ${ethers.utils.formatUnits(gasEstimate, "wei")}`);
+      // using double gas
+      const gasLimit = gasEstimate.mul(ethers.BigNumber.from(2));
       const processTx = await colossus.processAndReturnPlanets(
         locationIds,
         findArgsList,
-        { gasLimit }
+        { gasPrice, gasLimit }
       );
       console.log(`processTx`, processTx);
       console.log(
-        `gasLimit: ${processTx.gasLimit.toString()}, gasPrice: ${processTx?.gasPrice?.toString()}`
+        `gasLimit: ${processTx.gasLimit.toString()}, gasPrice: ${processTx.gasPrice?.toString()}`
       );
       const processReceipt = await processTx.wait();
       print(`processed block number ${processReceipt.blockNumber}`);
@@ -142,6 +147,25 @@ export function useColossus() {
     await df.hardRefreshPlanet(p.locationId);
   };
 
+  const updatePlanetOwners = async (planets: Planet[]) => {
+    // dao recognizes player as owner
+    const locationIds = planets.map((p) =>
+      ethers.BigNumber.from(`0x${p.locationId}`)
+    );
+    try {
+      console.log(`gasPrice`, gasPrice, typeof(gasPrice));
+      const updateTx = await colossus.updatePlanetOwners(locationIds, { gasPrice });
+      console.log(`updateTx`, updateTx);
+      const updateTxResponse = await updateTx.wait();
+      console.log(`minedUpdate`, updateTxResponse);
+    } catch (error) {
+      // setError(JSON.stringify(error))
+      console.log(`error updating owners`, error);
+    }
+
+    print(`registered ${locationIds.length} planets with dao`);
+  };
+
   /* only call this if you dao owns planet and is registered with dao and has been prospected */
   const readyToFind = async () => {
     // @ts-expect-error
@@ -150,11 +174,21 @@ export function useColossus() {
     // await updatePlanetOwners([planet]);
   };
 
+  const registerOwnership = async () => {
+    // @ts-expect-error
+    const planet = df.getPlanetWithId(selectedPlanet);
+    const pName = getPlanetName(planet.locationId);
+    print(`registering ${pName}`);
+    await updatePlanetOwners([planet]);
+  }
+
   return {
     processAndReturnPlanets,
+    updatePlanetOwners,
     returnSelected,
     checkDaoOwnership,
     readyToFind,
-    handleFind
+    handleFind,
+    registerOwnership
   }
 }
