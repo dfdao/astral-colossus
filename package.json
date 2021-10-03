@@ -2,10 +2,10 @@
   "name": "dev",
   "version": "1.0.0",
   "description": "",
-  "homepage": "https://darkforest.charity",
+  "homepage": "https://astralcolossus.xyz",
   "main": "index.js",
   "bugs": {
-    "url": "https://github.com/dfdao/charity/issues"
+    "url": "https://github.com/dfdao/astral-colossus/issues"
   },
   "scripts": {
     "test": "hardhat compile && hardhat test",
