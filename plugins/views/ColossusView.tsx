@@ -362,8 +362,7 @@ export function ColossusView(): JSX.Element {
       print(`terminating...`)
       return;
     }
-    await bulkUiRefresh(planetsToGift);
-
+    
     // will call refreshPlanet in contract
     await updatePlanetOwners(planetsToGift);
     const confirmedRegistered = await confirmedRegisteredPlanets(planetsToGift);
@@ -389,6 +388,7 @@ export function ColossusView(): JSX.Element {
         print(`prospected block number ${prospectReceipt.blockNumber}`);
         print(`prospected succeeded: ${prospectReceipt.status}`);
         prospectStatus = prospectTxReceipt.status;
+        await bulkUiRefresh(planetsToGift);
       } catch(error) {
         console.log(error); 
         print(`prospecting ${pName} failed. Trying next planet`)
