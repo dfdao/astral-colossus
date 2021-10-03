@@ -7,8 +7,8 @@ import * as ethers from 'ethers';
 import { useWallet } from "../lib/flashbots";
 import { DarkForestCore, DarkForestGetters, Whitelist } from '@darkforest_eth/contracts/typechain';
 import { getDaoContract, getCoreContract, usePlanetName, getPlanetName, useSelectedPlanet, useCoreContract } from "../lib/darkforest";
-import DAO_ABI from "../abis/DaoAbi.json";
-import { DaoContractPlayer } from '../../typechain'
+import { COLOSSUS_ABI } from "../generated/abi";
+import { HumanColossus } from '../types';
 
 import { WHITELIST_CONTRACT_ADDRESS } from "@darkforest_eth/contracts"
 import WHITELIST_ABI from "@darkforest_eth/contracts/abis/Whitelist.json";
@@ -20,10 +20,7 @@ const WEBSERVER_URL = 'https://api.zkga.me';
 export function InitDaoView(): JSX.Element {
 
 
-  const myAddress = '0xe732654bA181fC97A42dC35Cd137CdeE2B17930F';
-
-  // @ts-expect-error
-  const provider = new ethers.providers.JsonRpcProvider(df.ethConnectionProvider);
+  const provider = new ethers.providers.JsonRpcProvider('URL HERE');
   console.log('provider', provider);
 
   // @ts-expect-error
@@ -38,10 +35,9 @@ export function InitDaoView(): JSX.Element {
   // const wallet = useWallet();
 
   
-  const tempAddy = '0x9b25D251D785902e52ee79a328282217C02Bdc76'
-  const deployedAddy = '0xc71F6a0d1cB0949804d3cd8700CF9F4CAD2490EB'
+  const deployedAddy = '0xbE84D04035Bb2D1383B147f20DFC89DF0d2c418F'
 
-  const daoPlayer = new ethers.Contract(deployedAddy, DAO_ABI, wallet) as DaoContractPlayer;
+  const daoPlayer = new ethers.Contract(deployedAddy, COLOSSUS_ABI, wallet) as HumanColossus;
   const whitelist = new ethers.Contract(WHITELIST_CONTRACT_ADDRESS, WHITELIST_ABI, wallet) as Whitelist;
   
   // console.log(`connected to dao Player @ ${daoPlayer.address}`);
@@ -53,7 +49,7 @@ export function InitDaoView(): JSX.Element {
 
   const init = async () => {
     
-    console.log('abi', DAO_ABI);
+    console.log('abi', COLOSSUS_ABI);
     // get player's privateKey
     console.log('wallet', wallet);
 
@@ -63,15 +59,15 @@ export function InitDaoView(): JSX.Element {
     
     let locatable: LocatablePlanet;
     // @ts-expect-error
-    // locatable = await df.findRandomHomePlanet();
-    // const x = locatable.location.coords.x;
-    // const y = locatable.location.coords.y;
-    const coords = {
-        x: 56111,
-        y: -85874
-    }
-    const x = 56111;
-    const y = -85874;
+    locatable = await df.findRandomHomePlanet();
+    const x = locatable.location.coords.x;
+    const y = locatable.location.coords.y;
+    // const coords = {
+    //     x: 56111,
+    //     y: -85874
+    // }
+    // const x = 56111;
+    // const y = -85874;
     const r = Math.floor(Math.sqrt(x ** 2 + y ** 2)) + 1;
     // const r = df.worldRadius
     // console.log('found location', locatable);
@@ -82,6 +78,9 @@ export function InitDaoView(): JSX.Element {
     console.log('call Args', callArgs);
 
     const uInitTx = await daoPlayer.initializePlayer(callArgs[0], callArgs[1], callArgs[2], callArgs[3]);
+    console.log(`initTx`, uInitTx);
+    const initReceipt = await uInitTx.wait();
+    console.log(`receipt`, uInitTx);
     // const sTx = await wallet.populateTransaction(uInitTx);
     // // console.log('initTx', uInitTx);
     // console.log('sTx', sTx);
@@ -139,14 +138,15 @@ export function InitDaoView(): JSX.Element {
 
 
     // const whitelistkey = "TJ0Z2-PRJ0N-XQFSQ-2H9LI-UJM1S"
-    // //const whitelistkey = "XXXX-PRJ0N-XQFSQ-2H9LI-UJM1S"
+    // const whitelistkey = "2WTDV-92THW-D320O-HTLLF-8EGHY";
 
-    // // @ts-expect-error
+    // @ts-expect-erro
     // const res = await callRegisterUntilWhitelisted(whitelistkey, daoPlayer.address);
+    // console.log(`register res`, res);
 
-    // const isWhitelisted = await whitelist.isWhitelisted(daoPlayer.address);
+    const isWhitelisted = await whitelist.isWhitelisted(daoPlayer.address);
     // const iIWhitelisted = await whitelist.isWhitelisted(wallet.address);
-    // console.log(`${daoPlayer.address} is whitelistd? ${isWhitelisted}`);
+    console.log(`${daoPlayer.address} is whitelistd? ${isWhitelisted}`);
     // console.log(`I, ${wallet.address} am whitelistd? ${iIWhitelisted}`);
     console.log('owner?', await daoPlayer.owner());
 

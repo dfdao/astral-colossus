@@ -115,7 +115,7 @@ const StatusContainer: FunctionComponent<StatusContainerProps> = (props) => {
 };
 
 const ContractButtons: FunctionComponent = ({ children }) => {
-  const { returnSelected, checkDaoOwnership, readyToFind } = useColossus();
+  const { returnSelected, checkDaoOwnership, readyToFind, registerOwnership } = useColossus();
 
   return (
     <div style={styles.buttons}>

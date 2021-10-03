@@ -1,8 +1,8 @@
 import { createContext } from "preact";
-import { DaoContractPlayer } from "../types";
+import { HumanColossus } from "../types";
 
 interface ContractContextInterface {
-  colossus: DaoContractPlayer
+  colossus: HumanColossus
   colossusAddress: string
   colossusABI: string
 }
