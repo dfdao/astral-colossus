@@ -19,6 +19,11 @@ export function getAccount() {
   return df.account;
 }
 
+export function getProvider() {
+  // @ts-expect-error
+  return df.ethConnection.provider;
+}
+
 export async function getContract() {
   return {
     // @ts-expect-error
