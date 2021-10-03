@@ -1,29 +1,34 @@
 import { h } from "preact";
-import { useContract } from "../hooks";
-import { getContract } from "../helpers/df";
-import { getWallet } from "../helpers/wallet";
+import { useLeaderboard } from "../hooks";
+import { Loading } from "../components/Loading";
+import { ErrorLabel } from "../components/ErrorLabel";
 
 const styles = {
   view: {
     padding: 8,
   },
+  leaderboard: {},
+  entry: {},
 };
 
 export function LeaderboardView() {
+  const { leaderboard, loading, error } = useLeaderboard();
 
-  const getScore = async () => {
-    const { colossus, COLOSSUS_ADDRESS, COLOSSUS_ABI } = await getContract();
-    const wallet = getWallet();
-    const score = await colossus.contributions(wallet.address);
-    // @ts-expect-error
-    df.terminal.current.println(`score ${score}`);
-  }
-
-  return(
-    <div>
-      <div style={styles.view}>Leaderboard</div>
-      <button onClick={getScore}>Get Score</button>
+  return (
+    <div style={styles.view}>
+      <div style={styles.leaderboard}>
+        {leaderboard.map(({ address, score }) => {
+          return (
+            <div style={styles.entry} key={address}>
+              <p>
+                {address}:{score}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+      {loading && <Loading />}
+      <ErrorLabel error={error} />
     </div>
-    
-  ); 
+  );
 }

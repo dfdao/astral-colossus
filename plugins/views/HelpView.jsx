@@ -2,11 +2,13 @@ import { h } from "preact";
 import { Detail } from "../components/Detail";
 import { Link } from "../components/Link";
 import { colors } from "../helpers/theme";
+
 import {
   WEBSITE_URL,
   TWITTER_URL,
   GITHUB_URL,
   BUGS_URL,
+  DFDAO_LOGO,
   VERSION,
   CONTRACT_URL,
   CONTRACT_ADDRESS,
@@ -16,11 +18,21 @@ const styles = {
   view: {
     padding: 8,
   },
+  title: {
+    color: colors.dfwhite,
+  },
   warning: {
     color: colors.dfyellow,
   },
   danger: {
     color: colors.dfred,
+  },
+  logo: {
+    display: "block",
+    width: 64,
+  },
+  logoImage: {
+    width: 64,
   },
 };
 
@@ -36,6 +48,20 @@ export function HelpView() {
       <Detail title="github" description={<Link url={GITHUB_URL} />} />
       <Detail title="issues" description={<Link url={BUGS_URL} />} />
       <Detail title="twitter" description={<Link url={TWITTER_URL} />} />
+
+      <br />
+
+      <h1 style={styles.title}>Features</h1>
+      <ul class="text-muted">
+        <li>
+          - Gift a spacetime rip full of silver or an unprospected foundry to
+          the astral colossus contract.
+        </li>
+        <li>
+          - Receive a score on dfdao’s astral colossus community leaderboard.
+        </li>
+        <li>- Have your spacetime rips and foundries returned to you.</li>
+      </ul>
 
       <br />
       <h1 style={styles.warning}>Warning</h1>
@@ -58,6 +84,10 @@ export function HelpView() {
         the entire pipeline (such as imported dependencies) and should review
         plugins before you use them.
       </p>
+
+      <a href={TWITTER_URL} style={styles.logo} target="_blank">
+        <img style={styles.logoImage} src={DFDAO_LOGO} />
+      </a>
     </div>
   );
 }
