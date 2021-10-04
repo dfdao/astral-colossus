@@ -102,6 +102,29 @@ export const isFindable = (planetDetails: any, currentBlockNumber: number) => {
       // !prospectExpired(currentBlockNumber, planet.prospectedBlockNumber)
     );
   }
+export function blocksLeftToProspectExpiration(
+    currentBlockNumber: number,
+    prospectedBlockNumber: number
+  ) {
+    return (prospectedBlockNumber || 0) + 255 - currentBlockNumber;
+  }
+
+function prospectExpired(currentBlockNumber: number, prospectedBlockNumber: number) {
+  return blocksLeftToProspectExpiration(currentBlockNumber, prospectedBlockNumber) <= 0;
+}
+  
+export function isFindableClient(planet: Planet) {
+  // @ts-expect-error
+  let currentBlockNumber = df.contractsAPI.ethConnection.blockNumber;
+  if(!planet) return false;
+  return (
+    currentBlockNumber !== undefined &&
+    planet.planetType === PlanetType.RUINS &&
+    planet.prospectedBlockNumber !== undefined &&
+    !planet.hasTriedFindingArtifact &&
+    !prospectExpired(currentBlockNumber, planet.prospectedBlockNumber)
+  );
+}
   
 export const isProspectable = (planet: Planet) => {
   return isFoundry(planet) && enoughEnergyToProspect(planet) && planet.prospectedBlockNumber === undefined && !planet.unconfirmedProspectPlanet;
