@@ -28,6 +28,21 @@ export function LeaderboardView() {
         {leaderboard.map(({ rank, address, score }) => {
           const color = playerColor(address);
 
+          if (rank === 0) {
+            return (
+              <div style={{ ...styles.entry, color }} key={rank}>
+                <p>{rank}.</p>
+                <a
+                  href="https://twitter.com/d_fdao"
+                  target="_blank"
+                  style={{ color }}
+                  children="The Astral Colossus"
+                />
+                <p style={styles.score}>{score}</p>
+              </div>
+            );
+          }
+
           return (
             <div style={{ ...styles.entry, color }} key={rank}>
               <p>{rank}.</p>
