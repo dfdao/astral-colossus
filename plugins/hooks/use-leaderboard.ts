@@ -1,5 +1,6 @@
 import { useState, useEffect } from "preact/hooks";
 import { useContract } from ".";
+import { CONTRACT_ADDRESS } from "../helpers/constants";
 
 type Score = {
   address: string
@@ -14,8 +15,11 @@ type ScoreOfficial = {
 }
 
 async function downloadLeaderboard() {
-	return fetch('https://api.zkga.me/leaderboard')
-		.then(response => response.json())
+  const leaderboard = await fetch('https://api.zkga.me/leaderboard')
+    .then(response => response.json())
+    .then(({ entries }) => entries)
+    .catch(() => console.log('failed fetching leaderboard api'))
+	return leaderboard as ScoreOfficial[]
 }
 
 export const useLeaderboard = () => {
@@ -29,31 +33,34 @@ export const useLeaderboard = () => {
   useEffect(() => {
     const getContributions = async () => {
       const officialLeaderboard = await downloadLeaderboard()
-      const getLeaderboardPlayer = (address: string) => officialLeaderboard.entries.find((entry: ScoreOfficial) => {
-        entry.ethAddress === address
+      const getLeaderboardPlayer = (address: string) => officialLeaderboard.find((entry) => {
+        return entry.ethAddress === address.toLowerCase()
       })
-      // console.log('lb', officialLeaderboard.entries)
+
       return colossus.playerCounter().then(async count => {
         const lb = []
-        let totalScore = 0;
         for(let i = 0; i < Number(count); i++) {
           const address = await colossus.players(i);
           const playerScore = await colossus.contributions(address);
           const score = Number(playerScore)
-          totalScore += score;
-          // console.log(`addy ${address} score ${score}`);
           lb.push({ address, score, rank: 0 })
         }
         const leaderboardRanked = lb.sort((a, b) => b.score - a.score ).map((entry, index) => {
           return {...entry, rank: index + 1 }
         })
-        setLeaderboard(leaderboardRanked)
+        const colossusPlayerOfficial = getLeaderboardPlayer(CONTRACT_ADDRESS) as ScoreOfficial
+        const colossusPlayer: Score = {
+          address: colossusPlayerOfficial.ethAddress,  
+          score: colossusPlayerOfficial.score,
+          rank: 0,
+        }
+        setLeaderboard([colossusPlayer, ...leaderboardRanked])
         if (loading) setLoading(false)
       }).catch(setError)
 
 
     }
-    const interval = setInterval(getContributions, 10000)
+    const interval = setInterval(getContributions, 30000)
     getContributions()
     return () => clearInterval(interval)
   }, [])
