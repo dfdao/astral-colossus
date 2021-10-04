@@ -6,18 +6,31 @@ type Score = {
   address: string
   score: number
   rank: number
+  leaderboardRank: number
+  leaderboardScore: number
+}
+
+type ScoreOfficialWithoutRank = {
+  ethAddress: string
+  score: number
+  twitter?: string
 }
 
 type ScoreOfficial = {
   ethAddress: string
   score: number
+  rank: number
   twitter?: string
 }
 
 async function downloadLeaderboard() {
   const leaderboard = await fetch('https://api.zkga.me/leaderboard')
     .then(response => response.json())
-    .then(({ entries }) => entries)
+    .then(({ entries }) => {
+      return entries.sort((a: ScoreOfficialWithoutRank, b: ScoreOfficialWithoutRank) => b.score - a.score).map((entry: ScoreOfficialWithoutRank, index: number) => {
+        return {...entry, rank: index + 1} as ScoreOfficial
+      })
+    })
     .catch(() => console.log('failed fetching leaderboard api'))
 	return leaderboard as ScoreOfficial[]
 }
@@ -46,13 +59,16 @@ export const useLeaderboard = () => {
           lb.push({ address, score, rank: 0 })
         }
         const leaderboardRanked = lb.sort((a, b) => b.score - a.score ).map((entry, index) => {
-          return {...entry, rank: index + 1 }
+          const leaderboardPlayer = getLeaderboardPlayer(entry.address) as ScoreOfficial
+          return {...entry, rank: index + 1, leaderboardRank: leaderboardPlayer.rank, leaderboardScore: leaderboardPlayer.rank }
         })
         const colossusPlayerOfficial = getLeaderboardPlayer(CONTRACT_ADDRESS) as ScoreOfficial
         const colossusPlayer: Score = {
           address: colossusPlayerOfficial.ethAddress,  
           score: colossusPlayerOfficial.score,
           rank: 0,
+          leaderboardRank: colossusPlayerOfficial.rank,
+          leaderboardScore: colossusPlayerOfficial.score,
         }
         setLeaderboard([colossusPlayer, ...leaderboardRanked])
         if (loading) setLoading(false)
