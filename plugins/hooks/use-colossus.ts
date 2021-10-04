@@ -401,7 +401,7 @@ export function useColossus() {
   const handleWithdrawAndReturn = async (planets: Planet[]) => {
     /* sanity check */
     if (planets.length == 0) {
-      print(`np rips found, returning...`)
+      print(`no rips found, returning...`)
       return;
     }
     const rips = planets.filter((p) => p.planetType == PlanetType.TRADING_POST);
