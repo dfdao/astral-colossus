@@ -60,7 +60,7 @@ export const useLeaderboard = () => {
         }
         const leaderboardRanked = lb.sort((a, b) => b.score - a.score ).map((entry, index) => {
           const leaderboardPlayer = getLeaderboardPlayer(entry.address) as ScoreOfficial
-          return {...entry, rank: index + 1, leaderboardRank: leaderboardPlayer.rank, leaderboardScore: leaderboardPlayer.rank }
+          return {...entry, rank: index + 1, leaderboardRank: leaderboardPlayer.rank, leaderboardScore: leaderboardPlayer.score }
         })
         const colossusPlayerOfficial = getLeaderboardPlayer(CONTRACT_ADDRESS) as ScoreOfficial
         const colossusPlayer: Score = {
