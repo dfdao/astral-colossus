@@ -3,7 +3,7 @@ import { Planet, PlanetType } from "@darkforest_eth/types";
 
 import { colors } from "../helpers/theme";
 import { useColossus, useContribute } from "../hooks";
-import { isProspectable } from "../helpers/df";
+import { isProspectable, isFindableClient, isFindable } from "../helpers/df";
 import { getPlanetName, useSelectedPlanet } from "../lib/darkforest";
 import { Button } from "../components/Button";
 import { Loading } from "../components/Loading";
@@ -44,7 +44,7 @@ export function ContributeView() {
   // @ts-expect-error
   const isOwnedByPlayer = planet?.owner === df.account;
   const isValidPlanet = (isOwnedByPlayer && isFoundry) || isRip;
-  const isValidFoundry = planet && isProspectable(planet);
+  const isValidFoundry = planet && isFindableClient(planet);
   const isValidRip = isRip && planet.silver > 100;
   const canContribute = isValidFoundry || isValidRip;
   const isContributeDisabled = !canContribute;
@@ -53,7 +53,7 @@ export function ContributeView() {
   if (!isValidPlanet)
     return (
       <StatusContainer {...contributeProps}>
-        <p>Select a Rip or Foundry to contribute to the Colossus.</p>
+        <p>Select a Rip w Silver or <i>prospected</i> Foundry to contribute to the Colossus.</p>
       </StatusContainer>
     );
 
@@ -61,8 +61,7 @@ export function ContributeView() {
     return (
       <StatusContainer {...contributeProps}>
         <p>
-          The Foundry selected has either already been prospected or has
-          insufficient energy.
+          The Foundry selected needs to be prospected or already has an artifact.
         </p>
       </StatusContainer>
     );

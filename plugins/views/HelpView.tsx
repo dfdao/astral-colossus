@@ -61,6 +61,23 @@ export function HelpView() {
           - Receive a score on dfdao’s astral colossus community leaderboard.
         </li>
         <li>- Have your spacetime rips and foundries returned to you.</li>
+        <li>- Make sure your gas setting is manually set (not auto!).</li>
+      </ul>
+
+      <h1 style={styles.title}>Module Exports</h1>
+      <p>You can access the following functions with window.Colossus</p>
+      <ul class="text-muted">
+        <li>
+          - async handleFindAndReturn(planet) /* will contribute a prospected foundry to colossus */
+        </li>
+        <li>
+            - async handleWithdrawAndReturn(planets) /* will contribute the planets (must be rips) to colossus */
+          <p>
+          Note that although this function can handle many rips, it may break or be exceedingly slow. For best performance, use on fewer than 5 rips
+          </p>
+        </li>
+        <li>- async returnSelected /* will return selected planet if registered to you and owned by colossus  */</li>
+        <li>- aysync readyToFind /* will try to find and return foundry. If this fails, just call return Selected </li>
       </ul>
 
       <br />

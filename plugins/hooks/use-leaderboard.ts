@@ -32,14 +32,14 @@ export const useLeaderboard = () => {
       const getLeaderboardPlayer = (address: string) => officialLeaderboard.entries.find((entry: ScoreOfficial) => {
         entry.ethAddress === address
       })
-      console.log('lb', officialLeaderboard.entries)
+      // console.log('lb', officialLeaderboard.entries)
       return colossus.playerCounter().then(async count => {
         const lb = []
         for(let i = 0; i < Number(count); i++) {
           const address = await colossus.players(i);
           const playerScore = await colossus.contributions(address);
           const score = Number(playerScore)
-          console.log(`addy ${address} score ${score}`);
+          // console.log(`addy ${address} score ${score}`);
           lb.push({ address, score, rank: 0 })
         }
         const leaderboardRanked = lb.sort((a, b) => b.score - a.score ).map((entry, index) => {
