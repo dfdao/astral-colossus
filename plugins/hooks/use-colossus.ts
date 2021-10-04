@@ -1,10 +1,20 @@
 import { DFAnimation, Planet, PlanetType } from "@darkforest_eth/types";
 import { ethers } from "ethers";
 import { getPlanetName } from "../lib/darkforest";
+import { isFindableClient, isProspectable } from "../helpers/df";
 import { useState } from "preact/hooks";
 import { useContract, usePlayer, useSelectedPlanet, useCoreContract, useGasPrice } from '.'
 
+
+enum ColossusStatus {
+  NotRegisteredOrOwned = "NotRegisteredOrOwned",
+  Registered = "REGISTERED",
+  Owned = "OWNED",
+  RegisteredAndOwned = "REGISTEREDANDOWNED",
+}
+
 export function useColossus() {
+  
   const { colossus, coreContract } = useContract()
   const player = usePlayer()
   const selectedPlanet = useSelectedPlanet();
@@ -16,6 +26,7 @@ export function useColossus() {
     df.terminal.current.println(msg);
   };
 
+ 
   const getRandomActionId = () => {
     const hex = "0123456789abcdef";
 
@@ -25,7 +36,6 @@ export function useColossus() {
     }
     return ret;
   };
-
   
   const confirmedRegisteredPlanets = async (planets: Planet[]) => {
     let confirmedPlanets: Array<Planet> = [];
@@ -36,9 +46,9 @@ export function useColossus() {
 
       if (registrar == player.address) {
         confirmedPlanets.push(p);
-        print(`dao recognizes ${pName} is owned by player`);
+        print(`colossus recognizes ${pName} is owned by player`);
       } else {
-        print(`dao DOESNT recognize ${pName} is owned by player`);
+        print(`colossus DOESNT recognize ${pName} is owned by player`);
       }
     }
     return confirmedPlanets;
@@ -48,20 +58,19 @@ export function useColossus() {
     // await bulkPlanetRefresh(planets);
     let confirmedPlanets = [];
     for (let p of planets) {
-      console.log(`confirmed check`, p);
       const pName = getPlanetName(p.locationId);
       const id = ethers.BigNumber.from(`0x${p.locationId}`);
-      console.log('AA', coreContract, id)
       const planet = await coreContract.planets(id);
       if (planet.owner == colossus.address) {
         confirmedPlanets.push(p);
-        print(`${pName} is owned by dao`);
+        print(`${pName} is owned by colossus`);
       } else {
-        print(`${pName} is not owned by dao`);
+        print(`${pName} is not owned by colossus`);
       }
     }
     return confirmedPlanets;
   };
+
   const confirmedPlayerOwners = async (planets: Planet[]) => {
     // await bulkPlanetRefresh(planets);
     let confirmedPlanets = [];
@@ -80,36 +89,34 @@ export function useColossus() {
     return confirmedPlanets;
   };
 
-  const energy = (planet: Planet) => {
-    return Math.floor((planet.energy / planet.energyCap) * 100);
+  const bulkUiRefresh = async (planets: Planet[]) => {
+    const locationIds = planets.map((p) => p.locationId);
+    // @ts-expect-error
+    await df.bulkHardRefreshPlanets(locationIds);
   };
 
-  const isFoundry = (planet: Planet) => {
-    return planet.planetType == PlanetType.RUINS;
-  };
+  const getColossusStatus = async (planet: Planet): Promise<ColossusStatus> => {
+    const isRegistered = (await confirmedRegisteredPlanets([planet])).length;
+    const isOwned = (await confirmedDaoOwners([planet])).length;
+    let status: ColossusStatus;
+    if (isRegistered && isOwned) {
+      status = ColossusStatus.RegisteredAndOwned;
+    }
+    else if (isRegistered && !isOwned) {
+      status = ColossusStatus.Registered;
+    }
+    else if (!isRegistered && isOwned) {
+      status = ColossusStatus.Owned;
+    }
+    else {
+      status = ColossusStatus.NotRegisteredOrOwned
+    }
 
-  const canHaveArtifact = (planet: Planet) => {
-    return isFoundry(planet) && !planet.hasTriedFindingArtifact;
-  };
-
-  const enoughEnergyToProspect = (planet: Planet) => {
-    return energy(planet) >= 96;
-  };
-
-  function isProspectable(planet: Planet) {
-    return (
-      isFoundry(planet) &&
-      planet.prospectedBlockNumber === undefined &&
-      !planet.unconfirmedProspectPlanet
-    );
+    return status;
   }
 
   const getProspectablePlanets = async (planets: Planet[]) => {
-    let prospectablePlanets = planets
-      .filter(canHaveArtifact)
-      .filter(isProspectable)
-      .filter(enoughEnergyToProspect);
-
+    let prospectablePlanets = planets.filter(isProspectable);
     return prospectablePlanets;
   };
 
@@ -126,24 +133,6 @@ export function useColossus() {
     return prospectedBlockNumber !== 0 && !hasTriedFindingArtifact
   };
 
-  const blocksLeftToProspectExpiration = (
-    currentBlockNumber: number,
-    prospectedBlockNumber: number
-  ) => {
-    return (prospectedBlockNumber || 0) + 255 - currentBlockNumber;
-  };
-  const prospectExpired = (
-    currentBlockNumber: number,
-    prospectedBlockNumber: number
-  ) => {
-    return (
-      blocksLeftToProspectExpiration(
-        currentBlockNumber,
-        prospectedBlockNumber
-      ) <= 0
-    );
-  };
-
   const checkDaoOwnership = async () => {
     if (!selectedPlanet) {
       print(`no planet selected to check`);
@@ -153,10 +142,9 @@ export function useColossus() {
     const pName = getPlanetName(selectedPlanet);
     const pBigNumber = ethers.BigNumber.from(`0x${selectedPlanet}`);
     const owner = await colossus.planetOwners(pBigNumber);
-    print(`dao says ${pName} is owned by ${owner}`);
+    print(`colossus says ${pName} is owned by ${owner}`);
   };
 
-  // TODO: import findMoveArgs type
   const processAndReturnPlanets = async (
     rips: Planet[],
     findArgsList: any[]
@@ -235,10 +223,9 @@ export function useColossus() {
       // setError(`error mining transfer calls: ${JSON.stringify(error)}`)
     }
 
-    print(`transferred ${numTransferred} planets to dao`);
+    print(`transferred ${numTransferred} planets to colossus`);
   };
   
-
   const returnSelected = async () => {
     // @ts-expect-error
     const planet = await df.getPlanetWithId(selectedPlanet);
@@ -248,7 +235,6 @@ export function useColossus() {
       await processAndReturnPlanets([planet], []);
     }
   };
-
 
   const makeFindArtifactArgs = async (planets: Planet[]) => {
     let findArgsList = [];
@@ -288,7 +274,7 @@ export function useColossus() {
 
     console.log(`locIDs`, locationIds);
     if (locationIds.length == 0) {
-      print(`no owned planets to register with dao`);
+      print(`no owned planets to register with colossus`);
       return;
     }
     
@@ -321,6 +307,113 @@ export function useColossus() {
     await updatePlanetOwners([planet]);
   }
 
+  const handleRegistration = async (planets: Planet[]) => {
+    print(`registering ${planets.length} w colossus... (block needs to be mined)`);
+    await updatePlanetOwners(planets);
+    const confirmedRegistered = await confirmedRegisteredPlanets(planets);
+    print(`registered ${confirmedRegistered.length} owners w colossus`);
+    if (confirmedRegistered.length == 0) {
+      print(`register failed, returning...`);
+      return [];
+    }
+    return confirmedRegistered;
+  }
+
+  const handleTransfer = async (planets: Planet[]) => {
+    print(`transferring ${planets.length} to colossus...`);
+    await transferPlanets(planets);  
+    await bulkUiRefresh(planets);   
+    const confirmedOwned = await confirmedDaoOwners(planets);
+    print(`transferred ${confirmedOwned.length} planets to colossus`);
+    if (confirmedOwned.length == 0) {
+      print(`register failed, returning...`);
+      return [];
+    }
+    return confirmedOwned;
+  }
+
+  /* only handles one planet for now */
+  const makeConfirmedPlanets = async (planets: Planet[]) => {  
+    let confirmedPlanets: Array<Planet> = [];
+    if (planets.length == 0) {
+      return confirmedPlanets;
+    }
+    if (planets.length == 1) {
+      const planet = planets[0];
+      const status = await getColossusStatus(planet);   
+      if (status == ColossusStatus.NotRegisteredOrOwned) {
+        const registered = await handleRegistration([planet]);
+        confirmedPlanets = await handleTransfer(registered);
+      }
+      else if (status == ColossusStatus.Registered) {
+        confirmedPlanets = await handleTransfer([planet]);
+      }
+      else if (status == ColossusStatus.Owned) {
+        print(`this should never happen`);
+        confirmedPlanets = [];
+      }
+      else if (status == ColossusStatus.RegisteredAndOwned) {
+        confirmedPlanets = [planet];
+      }
+    }
+    else {
+      const registered = await handleRegistration(planets);
+      confirmedPlanets = await handleTransfer(registered);
+    }
+    return confirmedPlanets;
+
+  }
+  /* takes one prospected foundry through the colossus loop */
+  const handleFindAndReturn = async (planet: Planet) => {
+    const pName = getPlanetName(planet.locationId);
+    if (isFindableClient(planet)) {
+      print(`${pName} is findable...`)
+      
+      const confirmedPlanets = await makeConfirmedPlanets([planet]);
+
+      if(confirmedPlanets.length == 0) {
+        print(`planet is not valid candidate`);
+        return;
+      }
+      /* assume that planet is registered and owned by colossus */
+      const findArgs = await makeFindArtifactArgs(confirmedPlanets);
+      console.log(`findArgs`, findArgs);
+      // process and return the planet
+      await processAndReturnPlanets([], findArgs);
+      const returned = await confirmedPlayerOwners(confirmedPlanets);
+      print(`returned ${returned.length} planets to player`)
+      if (returned.length == 0) {
+        print(`~ ERROR RETURNING ~ please manually retrieve your planet with Return Selected button`)
+        return;
+      }
+      // @ts-expect-error
+      await df.hardRefreshPlanet(planet.locationId);
+      print(`finished foundry cycle`);
+      return planet;
+    }
+    else {
+      print(`${pName} is not findable. Returning...`)
+      if (isProspectable(planet)) print(`prospect this foundry first!`);
+      return null;
+    }
+  }
+
+  const handleWithdrawAndReturn = async (planets: Planet[]) => {
+    /* sanity check */
+    const rips = planets.filter((p) => p.planetType == PlanetType.TRADING_POST);
+    const confirmedPlanets = await makeConfirmedPlanets(rips);
+    await processAndReturnPlanets(confirmedPlanets, []);
+    await bulkUiRefresh(rips);
+    const returned = await confirmedPlayerOwners(confirmedPlanets);
+    print(`returned ${returned.length} planets to player`)
+    if (returned.length == 0) {
+      print(`~ ERROR RETURNING ~ please manually retrieve your planet with Return Selected button`)
+      return;
+    }
+    print(`finished rip cycle`);
+    return returned;
+  }
+
   return {
     transferPlanets,
     processAndReturnPlanets,
@@ -329,10 +422,13 @@ export function useColossus() {
     checkDaoOwnership,
     readyToFind,
     handleFind,
+    handleFindAndReturn,
+    handleWithdrawAndReturn,
     registerOwnership,
     getRandomActionId,
     getProspectablePlanets,
     isFindable,
+    makeFindArtifactArgs,
     confirmedDaoOwners,
     confirmedPlayerOwners,
     confirmedRegisteredPlanets,
