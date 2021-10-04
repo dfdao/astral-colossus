@@ -34,14 +34,14 @@ export const useLeaderboard = () => {
       })
       console.log('lb', officialLeaderboard.entries)
       return colossus.playerCounter().then(async count => {
-        const lb = []
-        for(let i = 0; i < Number(count); i++) {
+        // load all scores in parallel using promises
+        const lb = await Promise.all([...Array(Number(count))].map(async (_unused, i) => {
           const address = await colossus.players(i);
           const playerScore = await colossus.contributions(address);
-          const score = Number(playerScore)
+          const score = Number(playerScore);
           console.log(`addy ${address} score ${score}`);
-          lb.push({ address, score, rank: 0 })
-        }
+          return { address, score, rank: 0 };
+        }));
         const leaderboardRanked = lb.sort((a, b) => b.score - a.score ).map((entry, index) => {
           return {...entry, rank: index + 1 }
         })
