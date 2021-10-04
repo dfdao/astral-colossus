@@ -1,5 +1,5 @@
 import { h } from "preact";
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { Navigation } from "../components/Navigation";
 import { ContributeView } from "./ContributeView";
 import { LeaderboardView } from "./LeaderboardView";
@@ -9,6 +9,7 @@ import { CoreContractProvider } from "../components/CoreContractContext";
 import { ContractProvider } from "../components/ContractContext";
 import { StoreProvider } from "../components/StoreContext";
 import { TransactionProvider } from "../components/TransactionContext";
+import { useColossus, useContribute } from "../hooks";
 
 export function AppView({ contract, coreContract }) {
   const [isContributing, setIsContributing] = useState(false);
@@ -19,6 +20,7 @@ export function AppView({ contract, coreContract }) {
       <ContractProvider value={contract}>
         <StoreProvider value={store}>
           <TransactionProvider>
+          <PluginExport />
             <Navigation
               tabs={[
                 { name: "Contribute", TabContent: ContributeView },
@@ -32,4 +34,14 @@ export function AppView({ contract, coreContract }) {
       </ContractProvider>
     </CoreContractProvider>
   );
+}
+function PluginExport () {
+  const { returnSelected, readyToFind, handleWithdrawAndReturn, handleFindAndReturn } = useColossus()
+
+  useEffect(() => {
+    window.Colossus = { returnSelected, readyToFind, handleWithdrawAndReturn, handleFindAndReturn }
+    console.log(`Colossus exports`, window.Colossus);
+  }, [])
+
+  return null
 }

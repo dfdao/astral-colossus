@@ -25,17 +25,46 @@ export function LeaderboardView() {
   return (
     <div style={styles.view}>
       <div style={styles.leaderboard}>
-        {leaderboard.map(({ rank, address, score }) => {
-          const color = playerColor(address);
+        {leaderboard.map(
+          ({ rank, leaderboardRank, leaderboardScore, address, score }) => {
+            const color = playerColor(address);
 
-          return (
-            <div style={{ ...styles.entry, color }} key={rank}>
-              <p>{rank}.</p>
-              <PlayerName address={address} />
-              <p style={styles.score}>{score}</p>
-            </div>
-          );
-        })}
+            if (rank === 0) {
+              return (
+                <div
+                  style={{ ...styles.entry, color, alignItems: "baseline" }}
+                  key={rank}
+                >
+                  <p>{rank}.</p>
+                  <a
+                    href="https://twitter.com/d_fdao"
+                    target="_blank"
+                    style={{ color }}
+                    children="The Astral Colossus"
+                  />
+                  <p style={{ fontSize: 12, color: "#838383" }}>
+                    (Rank {leaderboardRank}: {leaderboardScore})
+                  </p>
+                  <p style={styles.score}>{score}</p>
+                </div>
+              );
+            }
+
+            return (
+              <div
+                style={{ ...styles.entry, color, alignItems: "baseline" }}
+                key={rank}
+              >
+                <p>{rank}.</p>
+                <PlayerName address={address} />
+                <p style={{ fontSize: 12, color: "#838383" }}>
+                  (Rank {leaderboardRank}: {leaderboardScore})
+                </p>
+                <p style={styles.score}>{score}</p>
+              </div>
+            );
+          }
+        )}
       </div>
       {loading && <Loading />}
       <ErrorLabel error={error} />
