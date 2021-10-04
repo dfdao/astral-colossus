@@ -35,10 +35,12 @@ export const useLeaderboard = () => {
       // console.log('lb', officialLeaderboard.entries)
       return colossus.playerCounter().then(async count => {
         const lb = []
+        let totalScore = 0;
         for(let i = 0; i < Number(count); i++) {
           const address = await colossus.players(i);
           const playerScore = await colossus.contributions(address);
           const score = Number(playerScore)
+          totalScore += score;
           // console.log(`addy ${address} score ${score}`);
           lb.push({ address, score, rank: 0 })
         }
