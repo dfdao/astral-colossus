@@ -1,10 +1,11 @@
 import { h } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { Navigation } from "../components/Navigation";
-import { ContributeView } from "./ContributeView";
+// import { ContributeView } from "./ContributeView";
 import { LeaderboardView } from "./LeaderboardView";
 // import { HistoryView } from "./HistoryView";
 import { HelpView } from "./HelpView";
+import { RoundEndView } from "./RoundEndView";
 import { CoreContractProvider } from "../components/CoreContractContext";
 import { ContractProvider } from "../components/ContractContext";
 import { StoreProvider } from "../components/StoreContext";
@@ -20,10 +21,10 @@ export function AppView({ contract, coreContract }) {
       <ContractProvider value={contract}>
         <StoreProvider value={store}>
           <TransactionProvider>
-          <PluginExport />
+            <PluginExport />
             <Navigation
               tabs={[
-                { name: "Contribute", TabContent: ContributeView },
+                { name: "Contribute", TabContent: RoundEndView },
                 { name: "Leaderboard", TabContent: LeaderboardView },
                 // { name: "History", TabContent: HistoryView },
                 { name: "Help", TabContent: HelpView },
@@ -35,13 +36,23 @@ export function AppView({ contract, coreContract }) {
     </CoreContractProvider>
   );
 }
-function PluginExport () {
-  const { returnSelected, readyToFind, handleWithdrawAndReturn, handleFindAndReturn } = useColossus()
+function PluginExport() {
+  const {
+    returnSelected,
+    readyToFind,
+    handleWithdrawAndReturn,
+    handleFindAndReturn,
+  } = useColossus();
 
   useEffect(() => {
-    window.Colossus = { returnSelected, readyToFind, handleWithdrawAndReturn, handleFindAndReturn }
+    window.Colossus = {
+      returnSelected,
+      readyToFind,
+      handleWithdrawAndReturn,
+      handleFindAndReturn,
+    };
     console.log(`Colossus exports`, window.Colossus);
-  }, [])
+  }, []);
 
-  return null
+  return null;
 }
