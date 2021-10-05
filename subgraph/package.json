@@ -1,0 +1,16 @@
+{
+  "name": "astral-colossus",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy": "graph deploy --node https://api.thegraph.com/deploy/ zk-farts/astral-colossus",
+    "create-local": "graph create --node http://localhost:8020/ zk-farts/astral-colossus",
+    "remove-local": "graph remove --node http://localhost:8020/ zk-farts/astral-colossus",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 zk-farts/astral-colossus"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.22.2",
+    "@graphprotocol/graph-ts": "0.22.1"
+  }
+}

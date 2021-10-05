@@ -1,0 +1,12 @@
+type PointContribution @entity {
+  id: ID!
+  count: BigInt!
+  player: Contributor! 
+  points: BigInt! 
+}
+type Contributor @entity {
+  id: ID!
+  contributions: [PointContribution!]@derivedFrom(field:"player")
+  numContributions: BigInt!
+  points: BigInt! 
+}

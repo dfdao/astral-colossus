@@ -1,0 +1,125 @@
+[
+  {
+    "inputs": [
+      { "type": "address", "name": "_owner", "internalType": "address" },
+      {
+        "type": "address",
+        "name": "_coreContract",
+        "internalType": "contract IDarkForestCore"
+      },
+      {
+        "type": "address",
+        "name": "_tokensContract",
+        "internalType": "contract IDarkForestTokens"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "type": "address",
+        "name": "player",
+        "internalType": "address",
+        "indexed": true
+      },
+      {
+        "type": "uint256",
+        "name": "points",
+        "internalType": "uint256",
+        "indexed": true
+      }
+    ],
+    "name": "Contribution",
+    "type": "event"
+  },
+  {
+    "inputs": [{ "type": "uint256", "name": "", "internalType": "uint256" }],
+    "name": "ARTIFACT_POINT_VALUES",
+    "outputs": [{ "type": "uint256", "name": "", "internalType": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "type": "address", "name": "", "internalType": "address" }],
+    "name": "contributions",
+    "outputs": [{ "type": "uint256", "name": "", "internalType": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "coreContract",
+    "outputs": [
+      {
+        "type": "address",
+        "name": "",
+        "internalType": "contract IDarkForestCore"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "type": "address", "name": "", "internalType": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "type": "uint256", "name": "", "internalType": "uint256" }],
+    "name": "planetOwners",
+    "outputs": [{ "type": "address", "name": "", "internalType": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "playerCounter",
+    "outputs": [{ "type": "uint256", "name": "", "internalType": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "type": "uint256", "name": "", "internalType": "uint256" }],
+    "name": "players",
+    "outputs": [{ "type": "address", "name": "", "internalType": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "type": "address", "name": "_owner", "internalType": "address" }
+    ],
+    "name": "setOwner",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "tokensContract",
+    "outputs": [
+      {
+        "type": "address",
+        "name": "",
+        "internalType": "contract IDarkForestTokens"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "type": "uint256[]", "name": "_planetIds", "internalType": "uint256[]" }
+    ],
+    "name": "updatePlanetOwners",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  { "stateMutability": "payable", "type": "receive" }
+]
