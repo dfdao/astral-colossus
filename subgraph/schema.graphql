@@ -1,8 +1,8 @@
 type PointContribution @entity {
   id: ID!
-  count: BigInt!
   player: Contributor! 
-  points: BigInt! 
+  points: BigInt!
+  timestamp: BigInt!
 }
 type Contributor @entity {
   id: ID!

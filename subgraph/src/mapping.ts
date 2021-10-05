@@ -19,9 +19,9 @@ export function handleContribution(event: Contribution): void {
   }
   let contribution = new PointContribution(event.params.player.toHexString() + '# ' + player.numContributions.toString())
 
-  contribution.count = player.numContributions
   contribution.player = player.id
   contribution.points = event.params.points
+  contribution.timestamp = event.block.timestamp
   contribution.save()
   player.save()
 
