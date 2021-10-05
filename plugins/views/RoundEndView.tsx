@@ -28,7 +28,7 @@ export function RoundEndView() {
       <p>v0.6r4 of Dark Forest has concluded.</p>
       <br />
       <p>
-        In just over 28 hours, 51 players contributed 74,984,403 points to the
+        In just over 28 hours, 52 players contributed 76,528,735 points to the
         Astral Colossus. Ultimately, we reached 34th on the Dark Forest
         leaderboard. A victory shared by all who participated; you will be
         remembered.
