@@ -51,13 +51,13 @@ export const useLeaderboard = () => {
       })
 
       return colossus.playerCounter().then(async count => {
-        const lb = []
-        for(let i = 0; i < Number(count); i++) {
+        // load all scores in parallel using promises
+        const lb = await Promise.all([...Array(Number(count))].map(async (_unused, i) => {
           const address = await colossus.players(i);
           const playerScore = await colossus.contributions(address);
-          const score = Number(playerScore)
-          lb.push({ address, score, rank: 0 })
-        }
+          const score = Number(playerScore);
+          return { address, score, rank: 0 };
+        }));
         const leaderboardRanked = lb.sort((a, b) => b.score - a.score ).map((entry, index) => {
           const leaderboardPlayer = getLeaderboardPlayer(entry.address) as ScoreOfficial
           return {...entry, rank: index + 1, leaderboardRank: leaderboardPlayer.rank, leaderboardScore: leaderboardPlayer.score }
