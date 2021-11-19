@@ -91,7 +91,7 @@ interface IDarkForestTokens {
 }
 
 
-contract HumanColossus {
+contract AstralColossus {
     event Contribution(address indexed player, uint256 indexed points);
 
     struct FoundryData {
@@ -101,6 +101,7 @@ contract HumanColossus {
         uint256[7] input;
     }
     
+    // Number of players => player address
     uint256 public playerCounter;
 
     mapping(uint256 => address) public players;
@@ -149,7 +150,10 @@ contract HumanColossus {
     function updatePlanetOwners(uint256[] calldata _planetIds) external {
         for (uint256 i = 0; i < _planetIds.length; i++) {
             uint256 planetId = _planetIds[i];
-            planetOwners[planetId] = getRefreshedPlanet(planetId).owner;
+            address planetOwner = getRefreshedPlanet(planetId).owner;
+            /* only the planet owner can confirm their ownership */
+            if (planetOwner != msg.sender) continue;
+            planetOwners[planetId] = planetOwner;
         }
     }
     
@@ -176,9 +180,9 @@ contract HumanColossus {
                   playerCounter++;
                 }
                 coreContract.withdrawSilver(planetId, planet.silver);
-                contributions[msg.sender] += planet.silver;
+                contributions[msg.sender] += planet.silver / 1000;
 
-                currContribution += planet.silver;
+                currContribution += planet.silver / 1000;
             }
             returnPlanet(planetId);
         }
