@@ -1,0 +1,25 @@
+specVersion: 0.0.2
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: AstralColossus
+    network: xdai
+    source:
+      address: "0xd93C2AA349d1131BB2A6e1D3732FD41a059B5803"
+      abi: AstralColossus
+      startBlock: 18398717
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      entities:
+        - Contribution
+        - Contributor
+      abis:
+        - name: AstralColossus
+          file: ./abis/AstralColossus.json
+      eventHandlers:
+        - event: Contribution(indexed address,indexed uint256)
+          handler: handleContribution
+      file: ./src/mapping.ts
